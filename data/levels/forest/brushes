@@ -1,0 +1,7 @@
+tile forest/tile-wood
+decoration forest/decor-flower 32 48
+decoration forest/decor-water 32 32
+decoration forest/decor-drops 32 32
+decoration forest/decor-moist 32 32
+decoration forest/decor-drop-left 32 32
+decoration forest/decor-drop-right 32 32

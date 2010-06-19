@@ -1,0 +1,8 @@
+debian/tmp/usr/games/magicor
+debian/tmp/usr/games/magicor-editor
+debian/tmp/etc/magicor.conf
+debian/tmp/etc/magicor-editor.conf
+debian/tmp/usr/lib/python2.4/site-packages/magicor/*.py
+debian/tmp/usr/lib/python2.4/site-packages/magicor/editor/*.py
+debian/tmp/usr/lib/python2.4/site-packages/magicor/sprites/*.py
+debian/tmp/usr/lib/python2.4/site-packages/magicor/states/*.py

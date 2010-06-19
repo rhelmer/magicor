@@ -1,0 +1,9 @@
+tile tiles/tube-vertical
+tile tiles/tube-horizontal
+tile tiles/tube-left-up
+tile tiles/tube-left-down
+tile tiles/tube-right-up
+tile tiles/tube-right-down
+tile tiles/stone
+tile tiles/squares
+stationary-enemy sprites/spikes samples/spikes 16

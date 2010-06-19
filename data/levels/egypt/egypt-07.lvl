@@ -1,0 +1,67 @@
+title Egypt 07
+description Egyptian themed level 7.
+credits Peter Gebauer
+background egypt/bg-bricks
+music egypt/egyptian-trance
+
+tile 5 4 egypt/bricks
+tile 6 4 egypt/bricks
+tile 7 4 egypt/bricks
+tile 8 4 egypt/bricks
+tile 9 4 egypt/bricks
+tile 10 4 egypt/bricks
+tile 11 4 egypt/bricks
+tile 12 4 egypt/bricks
+tile 13 4 egypt/bricks
+tile 14 4 egypt/bricks
+tile 5 5 egypt/bricks
+tile 6 5 egypt/bricks
+tile 14 5 egypt/bricks
+tile 5 6 egypt/bricks
+tile 6 6 egypt/bricks
+tile 14 6 egypt/bricks
+tile 5 7 egypt/bricks
+tile 6 7 egypt/bricks
+tile 10 7 egypt/bricks
+tile 14 7 egypt/bricks
+tile 5 8 egypt/bricks
+tile 6 8 egypt/bricks
+tile 10 8 egypt/bricks
+tile 14 8 egypt/bricks
+tile 5 9 egypt/bricks
+tile 6 9 egypt/bricks
+tile 8 9 egypt/bricks
+tile 10 9 egypt/bricks
+tile 14 9 egypt/bricks
+tile 5 10 egypt/bricks
+tile 14 10 egypt/bricks
+tile 5 11 egypt/bricks
+tile 7 11 egypt/bricks
+tile 8 11 egypt/bricks
+tile 9 11 egypt/bricks
+tile 10 11 egypt/bricks
+tile 11 11 egypt/bricks
+tile 12 11 egypt/bricks
+tile 13 11 egypt/bricks
+tile 14 11 egypt/bricks
+tile 5 12 egypt/bricks
+tile 6 12 egypt/bricks
+tile 7 12 egypt/bricks
+tile 8 12 egypt/bricks
+tile 9 12 egypt/bricks
+tile 10 12 egypt/bricks
+tile 11 12 egypt/bricks
+tile 12 12 egypt/bricks
+tile 13 12 egypt/bricks
+tile 14 12 egypt/bricks
+
+sprite 10 6 player
+sprite 11 7 ice connect-left
+sprite 12 8 ice connect-right
+sprite 13 8 ice connect
+sprite 12 9 ice
+sprite 7 10 ice
+sprite 9 10 ice
+sprite 12 10 ice
+sprite 6 11 fire
+sprite 7 5 decoration egypt/spider 32 32 16

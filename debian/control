@@ -1,0 +1,30 @@
+Source: magicor
+Section: games
+Priority: optional
+Maintainer: Xavier Oswald <x.oswald@free.fr>
+Uploaders: Frederic Wagner <wagnerf@imag.fr>
+Build-Depends: debhelper (>= 5), cdbs, python (>= 2.4-1)
+Standards-Version: 3.7.2
+
+Package: magicor
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python( >= 2.4-1), 
+ python-pygame, magicor-data, libsdl-image1.2, libsdl-mixer1.2,
+ python-gtk2, libglade2-0
+Description: puzzle game in the spirit of solomon's key
+ Magicor is a small puzzle game similar to the old NES classic
+ solomon's key. You control tux the penguin and create ice blocks
+ to extinguish all fires on each map.
+ .
+ Homepage: http://magicor.sf.net/
+
+Package: magicor-data
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python ( >= 2.4-1)
+Description: data files for the magicor puzzle game
+ Magicor is a small puzzle game similar to the old NES classic
+ solomon's key. You control tux the penguin and create ice blocks
+ to extinguish all fires on each map.
+ This package contains all data files necessary to run the game.
+ .
+ Homepage: http://magicor.sf.net/

@@ -1,0 +1,6 @@
+tile pompei/tile-hmosaic
+tile pompei/tile-vmosaic
+decoration pompei/decor-left 32 32
+decoration pompei/decor-hcenter 32 32
+decoration pompei/decor-right 32 32
+

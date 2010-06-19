@@ -1,0 +1,3 @@
+tile egypt/bricks
+climbing-enemy egypt/climbing-scarab egypt/scarab-die 4
+decoration egypt/spider 32 32

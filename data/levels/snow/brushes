@@ -1,0 +1,4 @@
+tile snow/snow
+decoration snow/snowman 64 96
+decoration snow/i1 32 32
+decoration snow/snowtop 32 48

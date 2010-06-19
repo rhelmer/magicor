@@ -1,0 +1,6 @@
+?package(magicor): \
+ needs="X11" \
+ section="Games/Puzzles" \
+ title="magicor" \
+ longtitle="puzzle game in the spirit of solomon's key" \
+ command="/usr/games/magicor" 

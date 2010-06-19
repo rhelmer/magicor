@@ -1,0 +1,4 @@
+tile space/tile-01
+walking-enemy space/walking-blob space/blob-die 1
+decoration space/decor-star 64 64
+decoration space/decor-small-star 8 8

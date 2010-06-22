@@ -38,7 +38,7 @@ class Fire(PhysicsSprite):
     def kill(self):
         PhysicsSprite.kill(self)
         self.light.kill()
-        for i in xrange(16):
+        for i in range(16):
             angle = i * (360 / 16.0)
             dx = 8.0 * math.cos(math.radians(angle))
             dy = 8.0 * math.sin(math.radians(angle))

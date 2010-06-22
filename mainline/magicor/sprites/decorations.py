@@ -9,18 +9,18 @@ import random
 from magicor.sprites import *
 
 class Decoration(AnimatedSprite):
-    
+
     def __init__(self, resource, x, y, width, height, speed):
         AnimatedSprite.__init__(
             self, x, y, width, height,
             {"default": [ImageFrame(resource, width, height)]
              }
             )
-        for i in xrange(self.resources[resource].get_width() / width):
+        for i in range(self.resources[resource].get_width() // width):
             self._animations["default"].append(AnimationFrame(i, speed))
         self._animations["default"].append(JumpFrame(1))
 
-        
+
 class WalkingPenguin(AnimatedSprite):
 
 
@@ -63,4 +63,3 @@ class WalkingPenguin(AnimatedSprite):
             self.movement = random.randint(-1, 1) * 0.2
             self._counter = -1
         self._counter += 1
-                

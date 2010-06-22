@@ -32,11 +32,11 @@ class Ball(PhysicsStoneSprite):
                 if dvy<0:
                     raise ValueError
             bReadOk = True
-        except ValueError,IndexError:
+        except ValueError as IndexError:
             bReadOk = False
             warnings.warn( "Ball requires veldir_x , veldir_y , fasteness, [ dvy ]")
-            print "in Ball.parse; returns ",bReadOk, veldir, fasteness
-        print "in Ball.parse; returns ",bReadOk, veldir, fasteness, dvy
+            print("in Ball.parse; returns ",bReadOk, veldir, fasteness)
+        print("in Ball.parse; returns ",bReadOk, veldir, fasteness, dvy)
         return bReadOk, veldir, fasteness, dvy
         
     def __init__(self, level, x, y, veldir, fasteness, dvy=0.,bounceFactor=1.,subgroup="global"):
@@ -68,7 +68,7 @@ class Ball(PhysicsStoneSprite):
         if action == 'die':
             self.kill()
             return
-        print "Unknown action for Ball"
+        print("Unknown action for Ball")
 
 
         

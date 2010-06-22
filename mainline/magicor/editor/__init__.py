@@ -50,7 +50,7 @@ class Editor(object):
             f = file(filename)
             data = f.read()
             f.close()
-        except IOError, ioe:
+        except IOError as ioe:
             raise EditorException(ioe)
         self.saved = filename
         return Level(data)

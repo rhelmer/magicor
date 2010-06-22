@@ -46,8 +46,8 @@ class GtkLevel(gtk.DrawingArea):
     def updateBackground(self, pixbuf):
         if pixbuf:
             width, height = pixbuf.get_width(), pixbuf.get_height()
-            for y in xrange(0, 576, height):
-                for x in xrange(0, 640, width):
+            for y in range(0, 576, height):
+                for x in range(0, 640, width):
                     if x >= 640 or y >= 576:
                         return # no point in continuing.
                     if x + width >= 640:
@@ -88,7 +88,7 @@ class GtkLevel(gtk.DrawingArea):
 
     def getBrushCopy(self, name, args):
         key = self._getBrushKeyName(name, args)
-        if self._brushes.has_key(key):
+        if key in self._brushes:
             brush = self._brushes[key].copy()            
             brush.update(args)
             return brush
@@ -172,11 +172,11 @@ class GtkLevel(gtk.DrawingArea):
                                    w * 32, h * 32,
                                    self._render,
                                    x * 32, y * 32)
-        for yy in xrange(y, y + h):
-            for xx in xrange(x, x + w):
+        for yy in range(y, y + h):
+            for xx in range(x, x + w):
                 if xx >= 0 and yy >= 0 and xx < 20 and yy < 18:
                     v = self._level[xx, yy]
-                    if v and v != "!" and self._brushes.has_key("tile %s"%v):
+                    if v and v != "!" and "tile %s"%v in self._brushes:
                         brush = self._brushes["tile %s"%v]
                         brush.pixbuf.copy_area(
                             brush.width * brush.offset, 0,
@@ -322,11 +322,11 @@ class GtkLevel(gtk.DrawingArea):
             width, height = self.window.get_size()
             fx = width / float(self._render.get_width())
             fy = height / float(self._render.get_height())
-            for yy in xrange(18):
+            for yy in range(18):
                 widget.window.draw_lines(ctx,
                                          ((0, int(yy * 32 * fy)),
                                           (width, int(yy * 32 * fy))))
-            for xx in xrange(20):
+            for xx in range(20):
                 widget.window.draw_lines(ctx,
                                          ((int(xx * 32 * fx), 0),
                                           (int(xx * 32 * fx), height)))
@@ -340,7 +340,7 @@ class GtkLevel(gtk.DrawingArea):
                 oldX, oldY = self._moving.x, self._moving.y
                 key = self._getBrushKeyName(self._moving.name,
                                             self._moving.args)
-                if self._brushes.has_key(key):
+                if key in self._brushes:
                     w = int(math.ceil(self._brushes[key].width / 32.0))
                     h = int(math.ceil(self._brushes[key].height / 32.0))
                 else:
@@ -400,7 +400,7 @@ class GtkEditor(Editor):
         gladeFile = "%s/editor/magicor-editor.glade"%config.get("data_path", "data")
         try:
             self.glade = glade.XML(gladeFile)
-        except RuntimeError, re:
+        except RuntimeError as re:
             raise RuntimeError("%s; glade file %s"%(re, gladeFile))
         self.glade.signal_autoconnect(self)
         if loadfile:
@@ -641,7 +641,7 @@ class GtkEditor(Editor):
                    "MainWindow"]
         for window in windows:
             widget = self.glade.get_widget(window)
-            if self.config.has_key(window):
+            if window in self.config:
                 if window == "PalletteDialog":
                     self.glade.get_widget("MenuPallette").set_active(True)
                 elif window == "SettingsDialog":
@@ -676,7 +676,7 @@ class GtkEditor(Editor):
                 w, h = widget.get_size()
                 x, y = widget.get_position()
                 self.config[window] = "%d, %d, %d, %d"%(x, y, w, h)
-            elif self.config.has_key(window):
+            elif window in self.config:
                 del self.config[window]
         if self.gtklevel.grid:
             self.config["grid"] = "1"
@@ -733,7 +733,7 @@ class GtkEditor(Editor):
             try:
                 self.saveLevel(self.saved)
                 self.setStatus("Saved file %s."%self.saved)
-            except EditorException, ee:
+            except EditorException as ee:
                 self.setStatus("")
                 self.glade.get_widget("ErrorLabel").set_text("%s"%ee)
                 self.glade.get_widget("ErrorDialog").show()
@@ -766,7 +766,7 @@ class GtkEditor(Editor):
             t = self.glade.get_widget("Preferences.DataPathEntry").get_text()
             if t.strip():
                 self.config["data_path"] = t.strip()
-            elif self.config.has_key("data_path"):
+            elif "data_path" in self.config:
                 del self.config["data_path"]
             self.saveConfig()
         
@@ -779,7 +779,7 @@ class GtkEditor(Editor):
                 self.setStatus("Loaded file %s."%dialog.get_filename())
                 self.gtklevel.setLevel(self.level)
                 self.getLevelSettings()
-            except EditorException, ee:
+            except EditorException as ee:
                 self.setStatus("")
                 self.glade.get_widget("ErrorLabel").set_text("%s"%ee)
                 self.glade.get_widget("ErrorDialog").show()
@@ -791,7 +791,7 @@ class GtkEditor(Editor):
                 self.saveLevel(dialog.get_filename())
                 self.setTitle(os.path.basename(dialog.get_filename()))
                 self.setStatus("Saved file %s."%dialog.get_filename())
-            except EditorException, ee:
+            except EditorException as ee:
                 self.setStatus("")
                 self.glade.get_widget("ErrorLabel").set_text("%s"%ee)
                 self.glade.get_widget("ErrorDialog").show()
@@ -1114,12 +1114,12 @@ class GtkEditor(Editor):
 
     def on_ScrollToolDialog_UpButton_clicked(self, w):
         tmp = [None] * 20
-        for x in xrange(20):
+        for x in range(20):
             tmp[x] = self.gtklevel._level[x, 0]
-        for y in xrange(17):
-            for x in xrange(20):
+        for y in range(17):
+            for x in range(20):
                 self.gtklevel._level[x, y] = self.gtklevel._level[x, y + 1]
-        for x in xrange(20):
+        for x in range(20):
             self.gtklevel._level[x, y + 1] = tmp[x]
         for sprite in self.gtklevel._level.sprites:
             sprite.y -= 1
@@ -1129,12 +1129,12 @@ class GtkEditor(Editor):
 
     def on_ScrollToolDialog_DownButton_clicked(self, w):
         tmp = [None] * 20
-        for x in xrange(20):
+        for x in range(20):
             tmp[x] = self.gtklevel._level[x, 17]
-        for y in xrange(17, 0, -1):
-            for x in xrange(20):
+        for y in range(17, 0, -1):
+            for x in range(20):
                 self.gtklevel._level[x, y] = self.gtklevel._level[x, y - 1]
-        for x in xrange(20):
+        for x in range(20):
             self.gtklevel._level[x, 0] = tmp[x]
         for sprite in self.gtklevel._level.sprites:
             sprite.y += 1
@@ -1144,12 +1144,12 @@ class GtkEditor(Editor):
 
     def on_ScrollToolDialog_LeftButton_clicked(self, w):
         tmp = [None] * 18
-        for y in xrange(18):
+        for y in range(18):
             tmp[y] = self.gtklevel._level[0, y]
-        for y in xrange(18):
-            for x in xrange(0, 19):
+        for y in range(18):
+            for x in range(0, 19):
                 self.gtklevel._level[x, y] = self.gtklevel._level[x + 1, y]
-        for y in xrange(18):
+        for y in range(18):
             self.gtklevel._level[19, y] = tmp[y]
         for sprite in self.gtklevel._level.sprites:
             sprite.x -= 1
@@ -1159,12 +1159,12 @@ class GtkEditor(Editor):
 
     def on_ScrollToolDialog_RightButton_clicked(self, w):
         tmp = [None] * 18
-        for y in xrange(18):
+        for y in range(18):
             tmp[y] = self.gtklevel._level[19, y]
-        for y in xrange(18):
-            for x in xrange(19, 0, - 1):
+        for y in range(18):
+            for x in range(19, 0, - 1):
                 self.gtklevel._level[x, y] = self.gtklevel._level[x - 1, y]
-        for y in xrange(18):
+        for y in range(18):
             self.gtklevel._level[0, y] = tmp[y]
         for sprite in self.gtklevel._level.sprites:
             sprite.x += 1

@@ -16,7 +16,7 @@ class ResourceNotFound(Exception):
     def __init__(self, resourceKey):
         Exception.__init__(self, resourceKey)
         self.resource = resourceKey
-        
+
 
 class Resources(object):
     """
@@ -44,19 +44,19 @@ class Resources(object):
         self._resources = {}
         self._defaultTile = None
         self._level = {}
-        print "resources using paths: %s"%", ".join(paths)
+        print("resources using paths: %s"%", ".join(paths))
 
     def __getitem__(self, key):
-        if self._level.has_key(key):
+        if key in self._level:
             return self._level[key]
-        elif self._resources.has_key(key):
+        elif key in self._resources:
             return self._resources[key]
         raise ResourceNotFound(key)
 
     def get(self, key, default = None):
-        if self._resources.has_key(key):
+        if key in self._resources:
             return self._resources[key]
-        elif self._level.has_key(key):
+        elif key in self._level:
             return self._level[key]
         return default
 
@@ -95,22 +95,22 @@ class Resources(object):
         return None
 
     def loadData(self, filename):
-        f = file(filename)
+        f = open(filename)
         data = f.read()
         f.close()
         return data
 
     def has_key(self, key):
-        return self._resources.has_key(key)
+        return key in self._resources
 
     def clear(self, prefix = None):
         if prefix:
             for d in (self._resources, self._level):
-                for k in d.keys():
+                for k in list(d.keys()):
                     if k.startswith(prefix):
                         del d[k]
         else:
-            print "resources cleared"
+            print("resources cleared")
             self._resources = {}
             self._level = {}
 
@@ -148,18 +148,18 @@ class Resources(object):
         else:
             p = path
         p = p.replace("/", os.path.sep)
-        print "using path %s"%p
+        print("using path %s"%p)
         if os.path.isdir(p):
             for f in os.listdir(p):
                 if (os.path.isfile("%s%s%s"%(p, os.path.sep, f))
-                    and not ret.has_key(f[:-4])
+                    and f[:-4] not in ret
                     and not f[:-4].startswith("_")):
                     if f[:-4].startswith("_"):
                         f = f[1:-4]
                     if prefix:
                         name = "%s%s%s"%(prefix, '/', f[:-4])
                     else:
-                        name = f[:-4]                    
+                        name = f[:-4]
                     if f[-3:] in self.SUPPORTED_IMAGES:
                         r = self._loadImage(path, name)
                     elif f[-3:] in self.SUPPORTED_SOUNDS:
@@ -167,12 +167,12 @@ class Resources(object):
                     else:
                         r = None
                     name = name.replace(os.path.sep, "/")
-                    if r and not ret.has_key(name):
+                    if r and name not in ret:
                         ret[name] = r
                         if self._resources == ret:
-                            print "loaded resource '%s'"%name
+                            print("loaded resource '%s'"%name)
                         else:
-                            print "loaded level resource '%s'"%name
+                            print("loaded level resource '%s'"%name)
         return ret
 
     def playSound(self, key):
@@ -218,7 +218,7 @@ class Resources(object):
     def loadLevelData(self):
         ret = []
         for path in ("%s%slevels"%(p, os.path.sep) for p in self.paths):
-            print "searching levels in path %s"%path
+            print("searching levels in path %s"%path)
             levelInfo = self._loadLevelData(path)
             if levelInfo:
                 ret.append((path, levelInfo))

@@ -22,20 +22,20 @@ g_devflags = { "F5":False, "F6":False, "F7":False ,"F8":False }
 
 def toggle_devflag( key ):
     global g_devflags
-    if g_devflags.has_key(key):
+    if key in g_devflags:
         g_devflags[key] = not g_devflags[key]
 
 def dbgPrint(key,cond,*args):
     global g_printkeys
-    if cond and g_printkeys.has_key(key):
-        print args
+    if cond and key in g_printkeys:
+        print(args)
 
 def parse_printkeys(s):
     global g_printkeys
     kl=s.split(":")
     for k in kl:
         g_printkeys[k]=True
-        print "In parse printkeys: found key:>%s<"%k
+        print(("In parse printkeys: found key:>%s<"%k))
 
 def set_group(key, val):
     global g_groups
@@ -54,7 +54,7 @@ class Text(object):
             self.maxWidth = maxWidth
         else:
             self.maxWidth = surface.get_width()
-        
+
     def setFont(self, font):
         self.font = font
         self.width = self.font.get_width() / len(self.TEXT_INDEX)
@@ -107,11 +107,11 @@ class State(object):
     def eventQuit(self, event):
         self._next = None
 
-    def next(self):
+    def __next__(self):
         return self._next
 
     def eventKeyDown(self, event):
-        print event
+        print(event)
         pass
 
     def eventKeyUp(self, event):
@@ -119,7 +119,7 @@ class State(object):
 
     def control(self):
         raise NotImplementedError()
-    
+
 
 class Controls(object):
 
@@ -127,9 +127,9 @@ class Controls(object):
         self.keys = keys
         self.joystick = joystick
         self.joyStates = {}
-        for i in xrange(numAxes):
+        for i in range(numAxes):
             self.joyStates["axis %d"%i] = None
-        for i in xrange(numButtons):
+        for i in range(numButtons):
             self.joyStates["button %d"%i] = 0
         self.button = None
         self.keyUp = False
@@ -149,20 +149,20 @@ class Controls(object):
         self.joyState = None
 
     def setKey(self, key):
-        if key and self.keys.has_key(key):
+        if key and key in self.keys:
             setattr(self, self.keys[key], True)
         self.key = key
 
     def unsetKey(self, key):
-        if key and self.keys.has_key(key):
+        if key and key in self.keys:
             setattr(self, self.keys[key], False)
         self.key = None
 
     def _setAxes(self, key, pos, neg):
         self.joyState = None
-        if self.joystick.has_key("%s neg"%key):
+        if "%s neg"%key in self.joystick:
             setattr(self, self.joystick["%s neg"%key], neg)
-        if self.joystick.has_key("%s pos"%key):
+        if "%s pos"%key in self.joystick:
             setattr(self, self.joystick["%s pos"%key], pos)
 
     def setAxis(self, axis, value):
@@ -180,14 +180,14 @@ class Controls(object):
     def setButton(self, button, value):
         key = "button %d"%button
         if self.joyStates[key] != value:
-            if self.joystick.has_key(key):
+            if key in self.joystick:
                 setattr(self, self.joystick[key], bool(value))
             self.joyStates[key] = value
             if value:
                 self.joyState = key
 
     def clear(self, value = False):
-        for control in self.keys.values() + self.joystick.values():
+        for control in list(self.keys.values()) + list(self.joystick.values()):
             if control:
                 setattr(self, control, value)
         self.key = None
@@ -236,9 +236,9 @@ class GameEngine(object):
         pygame.display.set_caption("Magicor")
         pygame.mouse.set_visible(False)
         for k in ("sound", "joystick", "music", "eyecandy"):
-            if not config.has_key(k):
+            if k not in config:
                 config[k] = 1
-            if (not config.has_key(k)
+            if (k not in config
                 or config.getInt(k) < 0
                 or config.getInt(k) > 100):
                 config[k] = 100
@@ -246,7 +246,7 @@ class GameEngine(object):
             try:
                 pygame.mixer.init(44100, -16, True, 4096)
                 pygame.mixer.set_num_channels(8)
-            except pygame.error, e:
+            except pygame.error as e:
                 warnings.warn("unable to init audio; %s"%e)
                 config["sound"] = 0
                 config["music"] = 0
@@ -264,7 +264,7 @@ class GameEngine(object):
         paths = []
         paths.append(config.get("user_path", "~/.magicor"))
         paths.append(config.get("data_path", "data"))
-        if not self.config.has_key("default_tile"):
+        if "default_tile" not in self.config:
             self.config["default_tile"] = "tiles/stone"
         self.resources = getResources(paths=paths,
                                       sound=config.getBool("sound"),
@@ -289,7 +289,7 @@ class GameEngine(object):
                         toggle_devflag("F7")
                     if event.key==pygame.K_F8:
                         toggle_devflag("F8")
-                        
+
                 en = "event%s"%pygame.event.event_name(event.type)
                 f = getattr(state, en, None)
                 if callable(f):
@@ -306,8 +306,8 @@ class GameEngine(object):
                 state.run()
                 pygame.display.flip()
             self.clock.tick(25)
-            state = state.next()
-        
+            state = next(state)
+
 
 class ConfigDict(dict):
 
@@ -342,17 +342,17 @@ class ConfigDict(dict):
             os.path.expanduser(
             os.path.expandvars(filename))))
         try:
-            f = file(filename)
+            f = open(filename)
             data = f.read()
             f.close()
             return cls.parse(data)
-        except IOError, ie:
+        except IOError as ie:
             warnings.warn("error loading config '%s'; %s"%(filename, ie))
         return None
 
     def serialize(self):
         ret = []
-        for k, v in self.items():
+        for k, v in list(self.items()):
             if v is None:
                 ret.append("%s ="%k)
             else:
@@ -363,14 +363,14 @@ class ConfigDict(dict):
         return "%s\n"%"\n".join(ret)
 
     def getBool(self, key, default = False):
-        if not self.has_key(key):
+        if key not in self:
             return default
         if str(self.get(key)).strip().lower() in ("false", "0", "no"):
             return False
         return True
 
     def getInt(self, key, default = 0):
-        if not self.has_key(key):
+        if key not in self:
             return default
         try:
             return int(self.get(key, default))
@@ -382,16 +382,16 @@ class ConfigDict(dict):
         filename = os.path.normpath(
             os.path.abspath(
             os.path.expanduser(
-            os.path.expandvars(filename))))        
+            os.path.expandvars(filename))))
         if not os.path.isdir(os.path.dirname(filename)):
             os.mkdir(os.path.dirname(filename))
         try:
-            f = file(filename, "w")
+            f = open(filename, "w")
             f.write(self.serialize())
             f.close()
-        except IOError, ie:
+        except IOError as ie:
             warnings.warn("error writing config '%s'; %s"%(filename, ie))
-        print "saved config %s"%filename
+        print(("saved config %s"%filename))
 
 
 def getConfig(paths = ["."]):

@@ -281,7 +281,7 @@ class Trapola(AnimatedSprite):
     def physics(self):
         if self.explodeStage==0:
             #if any sprite except decoration and light touches, then trigger the trapola
-            for k,group in g_groups.iteritems():
+            for k,group in g_groups.items():
                 if k!='decorations' and k!='world':
                     s=pygame.sprite.spritecollideany(self,group)
                     if s:

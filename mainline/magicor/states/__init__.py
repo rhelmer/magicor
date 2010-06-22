@@ -66,9 +66,9 @@ class BaseState(State):
 
     def eventJoystick(self):
         if self.config.get("joystick", 1) and self.joystick:
-            for axis in xrange(self.numAxes):
+            for axis in range(self.numAxes):
                 self.controls.setAxis(axis, self.joystick.get_axis(axis))
-            for button in xrange(self.numButtons):
+            for button in range(self.numButtons):
                 self.controls.setButton(button,
                                         self.joystick.get_button(button))
 

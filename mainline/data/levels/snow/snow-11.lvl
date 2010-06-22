@@ -247,7 +247,7 @@ sprite 9 0 ice
 sprite 9 1 ice
 sprite 9 2 ice
 sprite 16 14 player left
-sprite 5 4 stationary-enemy up sprites/spikes samples/spikes 8
+sprite 5 4 stationary-enemy up sprites/spikes samples/spikes 9
 sprite 5 7 stationary-enemy up sprites/spikes samples/spikes 8
 sprite 5 10 stationary-enemy up sprites/spikes samples/spikes 8
 sprite 10 14 stationary-enemy up sprites/spikes samples/spikes 6

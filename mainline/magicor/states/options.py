@@ -126,7 +126,7 @@ class OptionsState(BaseState):
         if callback and not callback() and isinstance(option, ValueOption):
             option.value = oldValue
             self.config[option.key] = oldValue
-            print self.config.getBool(option.key)
+            print(self.config.getBool(option.key))
 
     def activateOption(self, selected):
         option, callback = self.options[selected]
@@ -190,7 +190,7 @@ class MainOptionsState(OptionsState):
             try:
                 pygame.mixer.init(44100, -16, True, 1024)
                 pygame.mixer.set_num_channels(8)
-            except pygame.error, e:
+            except pygame.error as e:
                 warnings.warn("unable to init audio; %s"%e)
                 return False
         self.resources.sound = self.config.getBool("sound")
@@ -203,7 +203,7 @@ class MainOptionsState(OptionsState):
             try:
                 pygame.mixer.init(44100, -16, True, 1024)
                 pygame.mixer.set_num_channels(8)
-            except pygame.error, e:
+            except pygame.error as e:
                 warnings.warn("unable to init audio; %s"%e)
                 return False
         self.resources.music = self.config.getBool("music")
@@ -308,7 +308,7 @@ class KeyOptionsState(OptionsState):
                     self.controls.clear()
                     self.config[option.key] = option.value
                     keyHandle = "key%s"%option.key[4:].capitalize()
-                    for k, v in self.controls.keys.items():
+                    for k, v in list(self.controls.keys.items()):
                         if v == keyHandle:
                             del self.controls.keys[k]
                     for o in (oo[0] for oo in self.options):
@@ -392,7 +392,7 @@ class JoystickOptionsState(OptionsState):
                     self.controls.clear()
                     self.config[option.key] = option.value
                     joyHandle = "joy%s"%option.key[4:].capitalize()
-                    for k, v in self.controls.joystick.items():
+                    for k, v in list(self.controls.joystick.items()):
                         if v == joyHandle:
                             del self.controls.joystick[k]
                     for o in (oo[0] for oo in self.options):

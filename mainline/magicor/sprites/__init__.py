@@ -136,16 +136,11 @@ class AnimationGroup(pygame.sprite.Group):
     def sort(self, f = None):
         if not f:
             f = self.sortFunc
-        # self.sprites().sort(f)
-
-    def sortFunc(self, a, b):
-        if a.y == b.y:
-            return cmp(a.x, b.x)
-        return cmp(a.y, b.y)
+        self.sprites().sort(key=lambda b: b.y)
 
     def add(self, *sprites):
         pygame.sprite.Group.add(self, *sprites)
-        #self.sprites().sort(self.sortFunc)
+        # self.sprites().sort(key=lambda b: b.y)
 
     def remove(self, *sprites):
         pygame.sprite.Group.remove(self, *sprites)

@@ -60,7 +60,7 @@ class PlayMenuState(MenuState):
         self.screen.blit(self.source, (0, 0))
         self.renderMenu(200)
 
-    def __next__(self):
+    def next(self):
         return self._next
 
 class PlayState(BaseState):
@@ -337,7 +337,7 @@ class PlayState(BaseState):
     def drawScroller(self):
         if (self.scrollIndex % 8 == 0
             and self.scrollIndex / 8 < len(self.scrollText)):
-            self.text.draw(self.scrollText[self.scrollIndex / 8],
+            self.text.draw(self.scrollText[self.scrollIndex // 8],
                            800, 0, False)
         self.scrollIndex += 1
         if self.scrollIndex > len(self.scrollText) * 8:
@@ -399,17 +399,17 @@ class PlayState(BaseState):
                         fn = "%s/magicor.conf"%self.config.get("user_path", "~/.magicor")
                         self.config.saveFile(fn)
 
-                    self._next = self.previous(
-                                    self.config,
-                                    self.data,
-                                    self.screen)
-                else:
-                    self._next = PlayState(self.config,
-                                            self.data,
-                                            self.screen,
-                                            self.level,
-                                            self.previous,
-                                            False)
+                        self._next = self.previous(
+                                        self.config,
+                                        self.data,
+                                        self.screen)
+                    else:
+                        self._next = PlayState(self.config,
+                                                self.data,
+                                                self.screen,
+                                                self.level,
+                                                self.previous,
+                                                False)
                     return
             self.renderSurface.blit(self.levelSurface, (0, 0))
             self.fires.animate()
@@ -435,6 +435,7 @@ class PlayState(BaseState):
                                   self.screen.get_width(),
                                   v * 2)
                                  )
+        else:
             if ((not self.player.alive()
                  or (self.player._finished and self.player.isDone()))
                  and not self.ending):

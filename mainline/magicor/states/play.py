@@ -42,9 +42,9 @@ class PlayMenuState(MenuState):
         self.play = play
         self.source = pygame.Surface(self.screen.get_size())
         self.source.blit(self.screen, (0, 0))
-        for y in xrange(0, self.screen.get_height(), 2):
+        for y in range(0, self.screen.get_height(), 2):
             self.source.fill(0, (0, y, self.screen.get_width(), 1))
-        for x in xrange(0, self.screen.get_width(), 2):
+        for x in range(0, self.screen.get_width(), 2):
             self.source.fill(0, (x, 0, 1, self.screen.get_height()))
         self.resources.playSound("samples/menu")
 
@@ -60,7 +60,7 @@ class PlayMenuState(MenuState):
         self.screen.blit(self.source, (0, 0))
         self.renderMenu(200)
 
-    def next(self):
+    def __next__(self):
         return self._next
 
 class PlayState(BaseState):
@@ -119,13 +119,13 @@ class PlayState(BaseState):
                 and self.level.music
                 and restartMusic):
                 self.resources.playMusic("%s"%self.level.music, -1)
-        except (ValueError, ResourceNotFound), e:
+        except (ValueError, ResourceNotFound) as e:
             warnings.warn("unable to init level: %s"%e)
-            
+
             self.setNext(ErrorState(config, data, screen,
                                     "error loading level",
                                     self.previous))
-                                    
+
 
     def initializeSprites(self):
         for s in self.level.sprites:
@@ -284,14 +284,14 @@ class PlayState(BaseState):
     def renderLevel(self, surface):
         if self.background:
             w, h = self.background.get_width(), self.background.get_height()
-            for y in xrange(0, 576, h):
-                for x in xrange(0, 640, w):
+            for y in range(0, 576, h):
+                for x in range(0, 640, w):
                     surface.blit(self.background, (x, y))
             surface.fill(0, (0, 576, 640, 64))
         else:
             surface.fill(0)
-        for y in xrange(self.level.height):
-            for x in xrange(self.level.width):
+        for y in range(self.level.height):
+            for x in range(self.level.width):
                 if self.shouldRender(x, y):
                     if self.level.shadows:
                         surface.blit(
@@ -389,27 +389,27 @@ class PlayState(BaseState):
                 v = 16 + self.ending
                 if self.ending == 0:
                     if self.player._finished:
-			this_time = int(time.time() - self.startTime)
-			if self.config.has_key("time_"+self.level.title):
-				best_time = min(self.config.getInt("time_"+self.level.title), this_time)
-			else:
-				best_time = this_time
-			print "best time for "+self.level.title+" is "+str(best_time)
-			self.config["time_"+self.level.title] = best_time
-                	fn = "%s/magicor.conf"%self.config.get("user_path", "~/.magicor")
-                	self.config.saveFile(fn)
+                        this_time = int(time.time() - self.startTime)
+                        if "time_"+self.level.title in self.config:
+                            best_time = min(self.config.getInt("time_"+self.level.title), this_time)
+                        else:
+                            best_time = this_time
+                        print("best time for "+self.level.title+" is "+str(best_time))
+                        self.config["time_"+self.level.title] = best_time
+                        fn = "%s/magicor.conf"%self.config.get("user_path", "~/.magicor")
+                        self.config.saveFile(fn)
 
-
-                        self._next = self.previous(self.config,
-                                                   self.data,
-                                                   self.screen)
-                    else:
-                        self._next = PlayState(self.config,
-                                               self.data,
-                                               self.screen,
-                                               self.level,
-                                               self.previous,
-                                               False)
+                    self._next = self.previous(
+                                    self.config,
+                                    self.data,
+                                    self.screen)
+                else:
+                    self._next = PlayState(self.config,
+                                            self.data,
+                                            self.screen,
+                                            self.level,
+                                            self.previous,
+                                            False)
                     return
             self.renderSurface.blit(self.levelSurface, (0, 0))
             self.fires.animate()
@@ -428,14 +428,13 @@ class PlayState(BaseState):
             self.hudSprites.draw(self.renderSurface)
             self.screen.blit(self.renderSurface, (80, 16))
             self.drawScroller()
-            for y in xrange(0, self.screen.get_height(), 32):
+            for y in range(0, self.screen.get_height(), 32):
                 self.screen.fill(0,
                                  (0,
                                   y + 16 - v,
                                   self.screen.get_width(),
                                   v * 2)
                                  )
-        else:
             if ((not self.player.alive()
                  or (self.player._finished and self.player.isDone()))
                  and not self.ending):

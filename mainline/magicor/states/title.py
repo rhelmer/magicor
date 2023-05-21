@@ -40,7 +40,7 @@ class TitleState(MenuState):
         self.logoSurface = pygame.Surface(
             (800, self.logo.get_height() + 128), pygame.HWSURFACE, 32)
         self.sky = self.resources.loadImage("images/title-sky", False)
-        self.ice = self.resources.loadImage("images/title-ice", False)        
+        self.ice = self.resources.loadImage("images/title-ice", False)
         self.ice.set_colorkey(0)
         self.clouds = self.resources.loadImage("images/title-clouds", False)
         self.cloudX = 0
@@ -49,7 +49,7 @@ class TitleState(MenuState):
         self.lights = AnimationGroup()
         self.sun.add(Sun(368, 100, self.lights))
         x = -32
-        for i in xrange(10):
+        for i in range(10):
             self.lights.add(WalkingPenguin(x, 450, 550, self.ice))
             x -= random.randint(32, 128)
         self.lights.sort(lambda a, b: cmp(a.y, b.y))
@@ -57,12 +57,12 @@ class TitleState(MenuState):
             self.distRect = pygame.Rect((0, 0, 1, self.logo.get_height()))
         if startMusic:
             self.resources.playMusic("music/soft-trance")
-                                     
+
     def control(self):
         if self.controls.escape:
             self.setNext(None)
         MenuState.control(self)
-        
+
     def run(self):
         self.control()
         if self.eyecandy:
@@ -85,7 +85,7 @@ class TitleState(MenuState):
                 angle = self.angle
                 middle = self.logoSurface.get_width() / 2 \
                          - self.logo.get_width() / 2
-                for x in xrange(self.logo.get_width()):
+                for x in range(self.logo.get_width()):
                     self.distRect.left = x
                     y = 64 * math.sin(math.radians(angle))
                     self.logoSurface.blit(self.logo,
@@ -93,7 +93,7 @@ class TitleState(MenuState):
                                           self.distRect)
                     angle = (angle + 1) % 360
                 angle = self.rippleAngle
-                for y in xrange(256):
+                for y in range(256):
                     x = 64 * math.sin(math.radians(angle))
                     self.logoSurface.set_colorkey(0)
                     self.screen.blit(self.logoSurface,
@@ -107,8 +107,8 @@ class TitleState(MenuState):
                                  (400 - self.logo.get_width() / 2, 40))
         self.renderMenu(260, self.screen)
         if self.shutter > 0:
-            for y in xrange(0, 600, 32):
-                for x in xrange(0, 800, 32):
+            for y in range(0, 600, 32):
+                for x in range(0, 800, 32):
                     self.screen.fill(0, (x + 16 - self.shutter,
                                          y + 16 - self.shutter,
                                          self.shutter * 2,
@@ -151,29 +151,29 @@ class LevelSelectState(BaseState):
                     level.theme = theme or None
                     self.levels.append(level)
                     self.levelPaths[level] = path + filename
-        self.levels.sort(lambda x, y:
-                         cmp(x.theme, y.theme)
-                         or cmp(x.title, y.title))
+        #self.levels.sort(lambda x, y:
+        #                 cmp(x.theme, y.theme)
+        #                 or cmp(x.title, y.title))
 	#start possibly at a level never tried
-	for i in xrange(len(self.levels)):
-		if (not self.config.getInt("time_"+self.levels[i].title)):
-			self.selected = i
-			break
-        if self.data.lastLevelFinished:
-            for i in xrange(len(self.levels)):
-                if (self.levels[i].id == self.data.lastLevelFinished
-                    and i < len(self.levels) - 1):
-                    self.selected = (i + 1) % len(self.levels)
-                    break
-        elif self.data.lastLevel:
-            for i in xrange(len(self.levels)):
-                if self.levels[i].id == self.data.lastLevel:
-                    self.selected = i
-                    break
-        if config.getBool("music"):
-            self.resources.playMusic("music/menu")
-        self.updateInfo()
-        
+        for i in range(len(self.levels)):
+            if (not self.config.getInt("time_"+self.levels[i].title)):
+                self.selected = i
+                break
+            if self.data.lastLevelFinished:
+                for i in range(len(self.levels)):
+                    if (self.levels[i].id == self.data.lastLevelFinished
+                        and i < len(self.levels) - 1):
+                        self.selected = (i + 1) % len(self.levels)
+                        break
+            elif self.data.lastLevel:
+                for i in range(len(self.levels)):
+                    if self.levels[i].id == self.data.lastLevel:
+                        self.selected = i
+                        break
+            if config.getBool("music"):
+                self.resources.playMusic("music/menu")
+            self.updateInfo()
+
     def control(self):
         if self.controls.escape:
             self.setNext(TitleState(self.config, self.data, self.screen))
@@ -217,7 +217,7 @@ class LevelSelectState(BaseState):
                     self.data.lastLevel = self.levels[self.selected].id
                     self.renderLevel(self.renderSurface)
                     rendered = True
-                except (ValueError, ResourceNotFound), e:
+                except (ValueError, ResourceNotFound) as e:
                     warnings.warn("Unable to init level-Resource not found: %s"%e)
                     del self.levels[self.selected]
 
@@ -250,7 +250,7 @@ class LevelSelectState(BaseState):
             else:
                 self.screen.fill(0)
                 self.screen.blit(self.renderSurface, (80, 0))
-            for i in xrange(self.selected - self.NUM_OPTIONS,
+            for i in range(self.selected - self.NUM_OPTIONS,
                             self.selected + self.NUM_OPTIONS):
                 y = 128 + (i - self.selected) * self.text.font.get_height()
                 if i == self.selected:
@@ -258,12 +258,12 @@ class LevelSelectState(BaseState):
                 else:
                     self.text.font = self.resources["fonts/info-inactive"]
                 if i >= 0 and i < len(self.levels):
-			if (self.config.getInt("time_"+self.levels[i].title)):
-				time = self.config.getInt("time_"+self.levels[i].title)
-				minutes, seconds = divmod(time, 60)
-				self.text.draw(self.levels[i].title+" ("+str(minutes)+"m"+str(seconds)+"s)", 0, y)
-			else:
-				self.text.draw(self.levels[i].title, 0, y)
+                    if (self.config.getInt("time_"+self.levels[i].title)):
+                        time = self.config.getInt("time_"+self.levels[i].title)
+                        minutes, seconds = divmod(time, 60)
+                        self.text.draw(self.levels[i].title+" ("+str(minutes)+"m"+str(seconds)+"s)", 0, y)
+                    else:
+                        self.text.draw(self.levels[i].title, 0, y)
 
             self.text.font = self.resources["fonts/info"]
             #self.text.draw("difficulty %s"
@@ -280,8 +280,8 @@ class LevelSelectState(BaseState):
     def renderLevel(self, surface):
         level = self.levels[self.selected]
         surface.fill(0)
-        for y in xrange(level.height):
-            for x in xrange(level.width):
+        for y in range(level.height):
+            for x in range(level.width):
                 v = level[x, y]
                 if v and v != "!":
                     resource = self.resources.getTile("%s"%v)
@@ -331,7 +331,7 @@ class LevelSelectState(BaseState):
                     v = spl[1]
                     offset = ["up", "left", "down", "right"].index(spl[0]) * 4
             elif sprite.name == "lava":
-                w, h = 32, 64                
+                w, h = 32, 64
                 offset = sprite.args == "dormant" and 4 or 0
                 v = "sprites/lava"
             elif sprite.name == "decoration":
@@ -342,7 +342,7 @@ class LevelSelectState(BaseState):
                 v = "sprites/arrow"
                 offset = ["right", "down", "left", "up"].index(sprite.args)
             elif sprite.name == "trapola":
-                w, h = 32, 32    
+                w, h = 32, 32
                 v = "sprites/trapola2_q"
             elif sprite.name == "ball":
                 w, h = 8, 8

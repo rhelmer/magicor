@@ -20,7 +20,7 @@ class Frame(object):
 
 class ResourceFrame(Frame):
     """
-    Any type of animation frame resource.    
+    Any type of animation frame resource.
     """
 
     def __init__(self, resource):
@@ -68,7 +68,7 @@ class MoveFrame(Frame):
 
     def __str__(self):
         return "<MoveFrame %.2f, %.2f>"%(self.x, self.y)
-    
+
 
 class AnimationFrame(Frame):
 
@@ -117,7 +117,7 @@ class CallbackFrame(Frame):
         self.kwargs = kwargs
 
     def __str__(self):
-        return "<CallbackFrame %s>"%self.callback.func_name
+        return "<CallbackFrame %s>"%self.callback.__name__
 
 
 class AnimationGroup(pygame.sprite.Group):
@@ -136,13 +136,13 @@ class AnimationGroup(pygame.sprite.Group):
     def sort(self, f = None):
         if not f:
             f = self.sortFunc
-        self.sprites().sort(f)
+        # self.sprites().sort(f)
 
     def sortFunc(self, a, b):
         if a.y == b.y:
             return cmp(a.x, b.x)
         return cmp(a.y, b.y)
-    
+
     def add(self, *sprites):
         pygame.sprite.Group.add(self, *sprites)
         #self.sprites().sort(self.sortFunc)
@@ -230,7 +230,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
         Use specified set of animation.
         Raises KeyError if the animation set is not found.
         """
-        if not self._animations.has_key(name):
+        if name not in self._animations:
             raise KeyError("no animation named '%s' for sprite %s"
                            %(name, type(self)))
         self._animationName = name
@@ -253,7 +253,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
             elif self.image and isinstance(frame, AnimationFrame):
                 self._frameIndex = frame.frame
                 break
-            
+
     def animate(self):
         """
         Animates the sprite.
@@ -344,7 +344,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
                      )):
                 ret.append(s)
         return ret
-                
+
 
 class PhysicsSprite(AnimatedSprite):
 
@@ -415,7 +415,7 @@ class PhysicsSprite(AnimatedSprite):
             ):
             return True
         return False
-    
+
     def blockedRight(self):
         x, y = (self.x + self.width) / 32, self.y / 32
         if (self.x + self.width >= self.level.width * 32
@@ -436,7 +436,7 @@ class PhysicsSprite(AnimatedSprite):
             ):
             return True
         return False
-    
+
     def blockedRightAbove(self):
         x, y = (self.x + self.width) / 32, (self.y - 1) / 32
         if (self.x + self.width >= self.level.width * 32
@@ -469,7 +469,7 @@ class PhysicsSprite(AnimatedSprite):
         if (xr < 0 or xr > 19 or self.level[xr, y]):
             return True
         elif (y >= 0
-              and (self.level[x, y]                   
+              and (self.level[x, y]
                    or self.blocksGroup.getSprite(self.x,
                                                  self.y - 1,
                                                  self.width, 0, self)
@@ -524,7 +524,7 @@ def getSpritesTouched( self,toTravel ):
     self.rect.x += self.veldir[0]*toTravel
     self.rect.y += self.veldir[1]*toTravel
     r=self.radius
-    minFreeTravel = toTravel    
+    minFreeTravel = toTravel
     tl=[]
     bGenStuck = False
     steps=int(toTravel)+1
@@ -561,7 +561,7 @@ def getSpritesTouched( self,toTravel ):
                     else:
                         bStuck = False
                         freeTravel = (i-1)/float(steps)*toTravel
-                        overshot = toTravel - freeTravel 
+                        overshot = toTravel - freeTravel
                 else:
                     bStuck = False
                     freeTravel = toTravel
@@ -573,7 +573,7 @@ def getSpritesTouched( self,toTravel ):
                 if bStop and freeTravel<minFreeTravel:
                     minFreeTravel=freeTravel
     get0=itemgetter(0) #to acces member 0 of tuple without unpacking
-    tl = [ v for v in tl if get0(v)<=minFreeTravel ]  
+    tl = [ v for v in tl if get0(v)<=minFreeTravel ]
     self.rect.x = x0
     self.rect.y = y0
     return minFreeTravel, bGenStuck, tl
@@ -626,7 +626,7 @@ def mov_0(self):
         if self.unmovingTime <= 0:
             self.unmovingTerminated(self)
     #maybe collision code , with scrap and crush detection
-            
+
 
 
 def mov_h(self,toTravel):
@@ -739,10 +739,10 @@ def mov_diagonal(self,toTravel):
     steps = int(toTravel)+1;
     dx=self.fasteness/float(steps)*veldir[0]
     dy=self.fasteness/float(steps)*veldir[1]
-    
+
     self.bounceDir = veldir
     for i in range(0,steps):
-        aa += dx; a += dx 
+        aa += dx; a += dx
         bb += dy; b += dy
         #note: aa and bb seems the correct but with veldir >0 bounces prematurelly
         #with (aa-1) and (bb-1) looks better, albeit not perfect.
@@ -771,9 +771,9 @@ def mov_diagonal(self,toTravel):
         nonColisionTravel = i/float(steps)*toTravel
     else:
         nonColisionTravel = toTravel
-        
+
     return bBump, toTravel, nonColisionTravel, bOutOfScreen
-        
+
 def calcSpriteBounceDir( ts , s ):
     """ts sprite to bounce
     s obstacle sprite
@@ -793,7 +793,7 @@ def calcSpriteBounceDir( ts , s ):
 
     cx = ts.x+ts.width/2.
     cy = ts.y+ts.height/2.
-    
+
     u = s.height/float(s.width)*(cx-s.x)
     d1 =  u + s.y - cy
     d2 = -u + s.y+s.height -cy
@@ -847,7 +847,7 @@ class PhysicsStoneSprite(AnimatedSprite):
             self.move = mov_h
         else:
             self.move = mov_v
-            
+
         self.subgroup = subgroup
         self.bounceFactor = bounceFactor
         self.dvy = dvy
@@ -859,7 +859,7 @@ class PhysicsStoneSprite(AnimatedSprite):
         self.falling = False
         self.bounceDir = None
 
-    def hack_info_vel(self): #must be NOP. 
+    def hack_info_vel(self): #must be NOP.
         pass
 
     def physics(self):
@@ -878,7 +878,7 @@ class PhysicsStoneSprite(AnimatedSprite):
         while toTravel and maxBounces:
             maxBounces -= 1
             dbgPrint( 'sb', g_devflags['F5'], "@@@@@@@@@@@@@@ maxBounces=",maxBounces)
-            bBump, toTravel, nonColisionTravel, bOutOfScreen = self.move(self,toTravel)  
+            bBump, toTravel, nonColisionTravel, bOutOfScreen = self.move(self,toTravel)
             dbgPrint( 'sb', g_devflags['F5'],"    bBump=",bBump,"   toTravel=",toTravel,"  nonColisionTravel=",nonColisionTravel)
             maxTravel, bGenStuck, tl = getSpritesTouched( self, nonColisionTravel )
             dbgPrint( 'sb', g_devflags['F5'],"   maxTravel=",maxTravel,"   bGenStuck=",bGenStuck)
@@ -955,7 +955,7 @@ class PhysicsStoneSprite(AnimatedSprite):
                         #adjust to travel after the bounce
                         #NOTE: maybe bounceFactor must be handled here, before
                         #the toTravel adjust
-                        if ( toTravel and 
+                        if ( toTravel and
                              ( fasteness!=self.fasteness
                                or (dvy and self.veldir[1]!=self.bounceDir[1]))
                              ):
@@ -991,7 +991,7 @@ class PhysicsStoneSprite(AnimatedSprite):
                 else:
                     self.doAction(self_action)
                 spriteTouched.doAction(inflict_action)
-            #good, all sprite touchs procesed                             
+            #good, all sprite touchs procesed
             if bOutOfScreen:
                 self.kill()
                 return
@@ -999,7 +999,7 @@ class PhysicsStoneSprite(AnimatedSprite):
         if toTravel:
             dbgPrint( 'sb', g_devflags['F5'], "@@@probably stuck-crushed. toTravel=",toTravel)
 
- 
+
     def doAction(self,action):
         if action=='die':
             self.kill()

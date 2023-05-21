@@ -5,7 +5,8 @@ Copyright 2006  Peter Gebauer. Licensed as Public Domain.
 (see LICENSE for more info)
 """
 
-import warnings, md5
+import warnings
+import hashlib
 
 _SORT = ["player", "lava", "decoration", "ice", "fire", "tube"]
 
@@ -59,8 +60,7 @@ class Level(DataParser):
     def __init__(self, data = None):
         DataParser.__init__(self)
         if data:
-            id_ = md5.new()
-            id_.update(data)
+            id_ = hashlib.md5(data.encode())
             self.id = id_.hexdigest()
         else:
             self.id = None
@@ -84,7 +84,7 @@ class Level(DataParser):
 
     def clearTiles(self):
         self.tiles = []
-        for i in xrange(self.height):
+        for i in range(self.height):
             self.tiles.append([None] * self.width)
 
     def handle(self, command, rest, lc):
@@ -169,10 +169,10 @@ class Level(DataParser):
         # no matching commands
         else:
             warnings.warn("unknown command '%s' on row %d"%(command, lc))
-            
+
     def __getitem__(self, v):
         try:
-            return self.tiles[v[1]][v[0]]
+            return self.tiles[int(v[1])][int(v[0])]
         except IndexError:
             raise IndexError("coordinate (%d, %d) out of range"%v)
 
@@ -201,8 +201,8 @@ class Level(DataParser):
                   ""]
         if self.tiles:
             oldLen = len(output)
-            for row in xrange(self.height):
-                for col in xrange(self.width):
+            for row in range(self.height):
+                for col in range(self.width):
                     if self[col, row]:
                         output.append("tile %d %d %s"%
                                       (col, row, self[col, row]))

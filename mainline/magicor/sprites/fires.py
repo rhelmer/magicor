@@ -57,7 +57,7 @@ class Fire(PhysicsSprite):
                 if self.followMe.falling or not self.followMe.moving:
                     self.x = self.x/32*32
                     self.followMe=None
-                for s in pygame.sprite.spritecollide(self, self.blocksGroup, False): # usar sprite collision ?
+                for s in pygame.sprite.spritecollide(self, self.blocksGroup, False): # user sprite collision ?
                     if isinstance(s, Ice):
                         if s.falling and s.x == self.x and s.y == self.y:
                             s.kill()
@@ -73,7 +73,7 @@ class Fire(PhysicsSprite):
                         if self.level[(self.x+self.width)/32,(self.y+self.height/2)/32]:
                             self.x = self.x/32*32
                             self.followMe = None
-                    else:    
+                    else:
                         if self.level[self.x/32,(self.y+self.height/2)/32]:
                             self.x = (self.x/32+1)*32
                             self.followMe = None
@@ -105,4 +105,3 @@ class Fire(PhysicsSprite):
                         g_groups['stones'].add(Seeker(x+heading[0]*4., y+heading[1]*4., heading,3.,target))
             self.light.x = self.x - 32 + random.randint(-4, 4)
             self.light.y = self.y - 32 + random.randint(-4, 4)
-            

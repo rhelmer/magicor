@@ -9,7 +9,7 @@ Copyright 2006  Peter Gebauer. Licensed as Public Domain.
 """
 import os, warnings, textwrap
 
-from pygame.locals import *
+# from pygame.locals import *
 import pygame, pygame.image, pygame.sprite,  pygame.mixer
 from pygame.mixer import music
 

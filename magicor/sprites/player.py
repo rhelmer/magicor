@@ -12,7 +12,7 @@ from magicor.sprites.lights import Burning, IceDust
 
 class Player(PhysicsSprite):
     IMAGE = "sprites/player-penguin"
-    
+
     def __init__(self, x, y,
                  level,
                  players,
@@ -251,7 +251,7 @@ class Player(PhysicsSprite):
         self._iceType = NormalIce
         self.setAnimation("stand-right")
 
-    def canMove(self):        
+    def canMove(self):
         return (self.moving == 0
                 and not self.falling
                 and not self.jumping
@@ -261,7 +261,7 @@ class Player(PhysicsSprite):
                 and not self._finished
                 and not self.freezing)
 
-    def eventFalling(self):        
+    def eventFalling(self):
         self.setAnimation("falling")
 
     def eventStop(self):
@@ -365,7 +365,7 @@ class Player(PhysicsSprite):
                     self.setAnimation("stand-left")
         self.x = (self.x / 32) * 32
         self.y = (self.y / 32) * 32
-            
+
     def manipulateIce(self):
         if self.canMove():
             if (self.direction > 0
@@ -456,7 +456,7 @@ class Player(PhysicsSprite):
                     and not self.dead
                     and not self._finished
                     and not self.freezing)
-    
+
     def die(self):
         if not self.dead:
             self.dead = True
@@ -471,7 +471,7 @@ class Player(PhysicsSprite):
         if not self.dead and not self._finished and self.canMove():
             self.setAnimation("happy")
             self._finished = True
-            
+
     def doAction(self,action):
         if action=='die':
             self.die()
@@ -490,7 +490,7 @@ class Player(PhysicsSprite):
                                 )
         elif not self._finished:
             PhysicsSprite.physics(self)
-            y = (self.y - self.height + 1) / 32
+            y = (self.y - self.height + 1) // 32
             if not self.jumping and not self.pushing:
                 if (self.moving > 6
                     and self.blockedRight()):
@@ -499,7 +499,7 @@ class Player(PhysicsSprite):
                                                      0,
                                                      self.height,
                                                      self,
-                                                     Tube)                
+                                                     Tube)
                     matching = tube and tube.getMatching() or None
                     if (tube and tube.direction == "left"
                         and matching and not matching.blocked()):
@@ -628,7 +628,7 @@ class Player(PhysicsSprite):
 
     def hack_info_vel(self):
         if self.vertical:
-            self.veldir[1]=self.vertical/abs(self.vertical)
+            self.veldir[1]=self.vertical//abs(self.vertical)
             self.fasteness = 4
         else: self.veldir[1]=0
         if ( self.jumping
@@ -642,4 +642,3 @@ class Player(PhysicsSprite):
         else:
             self.veldir[0] = self.direction
             self.fasteness = 4
-

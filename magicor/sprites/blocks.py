@@ -73,14 +73,14 @@ class IcePiece(AnimatedSprite):
         self.dy += 0.75
         if self.y > 600:
             self.kill()
-            
+
 
 class Ice(PhysicsSprite):
     NONE = 0
     LEFT = 1
     RIGHT = 2
     BOTH = 3
-    
+
     def __init__(self, x, y, level, blocksGroup, imgResource, life,
                  lightsGroup, players, enemies, eyecandy = True):
         PhysicsSprite.__init__(
@@ -238,11 +238,11 @@ class Ice(PhysicsSprite):
             self.left.setConnectionAnimation()
         if self.right and self.right != self:
             self.right.left = None
-            self.right.setConnectionAnimation()            
+            self.right.setConnectionAnimation()
         self.left = None
         self.right = None
         self.setConnectionAnimation()
-        
+
     def addConnections(self, direction = 0):
         if direction <= 0 and self.blockedLeft():
             self.left = self
@@ -311,7 +311,7 @@ class Ice(PhysicsSprite):
         if self.moving != 0:
             self.resources.playSound("samples/blockhit")
             self.moving = 0
-            
+
     def push(self, direction):
         global g_groups
         fire=g_groups['fires'].getSpriteAt(self.x, self.y-32, None, None)
@@ -321,7 +321,7 @@ class Ice(PhysicsSprite):
             self.moving = -99999
         elif direction > 0:
             self.moving = 99999
-            
+
     def eventStop(self):
         self.resources.playSound("samples/blockland")
 #        self.zoomSurface = None
@@ -338,7 +338,7 @@ class Ice(PhysicsSprite):
             else:
                 self.fasteness = 4
                 if self.moving>0: self.veldir[0]=1
-                else: self.veldir[0]=-1        
+                else: self.veldir[0]=-1
 
 class NormalIce(Ice):
 
@@ -347,4 +347,3 @@ class NormalIce(Ice):
         Ice.__init__(self, x, y, level, blocksGroup,
                      "sprites/ice-normal", 32, lightsGroup, players, enemies,
                      zoom)
-        

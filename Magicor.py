@@ -5,13 +5,13 @@
 # (see LICENSE for more info)
 import sys, os
 
-def change_to_correct_path(): #taken from pygame wiki cookbook 
-    import os, sys 
-    exe_base_dir = os.path.abspath(os.path.dirname(sys.argv[0])) 
-    os.chdir(exe_base_dir) 
-    sys.path.append(exe_base_dir) 
- 
-if sys.platform=='win32': 
+def change_to_correct_path(): #taken from pygame wiki cookbook
+    import os, sys
+    exe_base_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+    os.chdir(exe_base_dir)
+    sys.path.append(exe_base_dir)
+
+if sys.platform=='win32':
     change_to_correct_path() #usefull when running from another dir, desktop or appbar
 
 from optparse import OptionParser
@@ -25,7 +25,7 @@ if sys.platform=='win32':
     parser.add_option("-c", "--config", dest="configPath",
                   default = ".",
                   help="use this config path, default is magicor directory.")
-    baseConf=".\magicor.conf"
+    baseConf="./magicor.conf"
 else:
     parser.add_option("-c", "--config", dest="configPath",
                   default = "###CONFIG_PATH###",

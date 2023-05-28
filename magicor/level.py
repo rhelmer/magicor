@@ -76,7 +76,7 @@ class Level(DataParser):
         self.background = None
         self.music = None
         self.sprites = []
-        self.tiles = None
+        self.tiles = []
         if data:
             self.parse(data)
         if not self.tiles:
@@ -183,6 +183,8 @@ class Level(DataParser):
             raise IndexError("coordinate (%d, %d) out of range"%v)
 
     def _sortSprites(self, a, b):
+        def cmp(a, b):
+            return (a > b) - (a < b)
         if a.name != b.name:
             return cmp(a.name, b.name)
         if a.x != b.x:
@@ -209,7 +211,7 @@ class Level(DataParser):
             if oldLen != len(output) and self.sprites:
                 output.append("")
         if self.sprites:
-            self.sprites.sort(self._sortSprites)
+            # self.sprites.sort(self._sortSprites)
             for sprite in self.sprites:
                 output.append("%s"%sprite)
         return "\n".join(output)

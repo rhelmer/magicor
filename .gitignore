@@ -2,3 +2,5 @@
 *~
 *.bak
 dist
+.venv
+.DS_Store

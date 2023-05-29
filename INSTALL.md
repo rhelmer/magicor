@@ -2,11 +2,11 @@
 Installation for non windows OSes, GNU-oriented:
 
 Requirements:
-  - python >2.4
-  - pygame >1.7.1
-  - libsdl >1.2
-  - SDL_mixer
-  - SDL_image
+  - python >= 3.11
+  - pygame >= 2.4.0
+  - sdl2 >= 2.26
+  - SDL_mixer >= 2.6
+  - SDL_image >= 2.6
 
   - GNU make (or equivalent, optional for proper installation)
   - rsync (optional for making dist target)
@@ -16,7 +16,17 @@ Additional requirements for the editor:
   - libglade2
   - PyGTK
 
-Installation instructions for GNU/BSD (and similar):
+Install dependencies macOS using [Homebrew](https://brew.sh/):
+  ```sh
+  brew install python3 sdl2 sdl2_image sdl2_mixer
+  pip3 install virtualenv
+  python3 -m virtualenv
+  pip install -r requirements.txt
+  ```
+  Now you may run `python3 Magicor.py` to run Magicor, or see the next
+  section to install it on your system in `/usr/local/games/magicor`.
+
+Installation instructions for GNU/BSD and macOS (and similar):
   1. Edit the file 'Makefile', change the variables to suit your system.
   2. Type 'make install'.
   3. Spend the entire day playing Magicor. :-)

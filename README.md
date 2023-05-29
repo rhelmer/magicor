@@ -1,5 +1,4 @@
-Hello there, old-school gamer! For installation instructions see INSTALL,
-for usage instructions try "python Magicor.py -h".
+Hello there, old-school gamer! For installation instructions see [INSTALL.md](INSTALL.md).
 
 Contents
 -------

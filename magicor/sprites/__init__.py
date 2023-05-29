@@ -168,8 +168,8 @@ class AnimationGroup(pygame.sprite.Group):
         ret = []
         self.r.left = x
         self.r.top = y
-        self.r.width = width
-        self.r.height = height
+        self.r.width = width if width > 0 else 1
+        self.r.height = height if height > 0 else 1
         for sprite in self.sprites():
             if (sprite != exclude
                 and self.r.colliderect(sprite.rect)

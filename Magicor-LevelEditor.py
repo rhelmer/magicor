@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Magicor Level Editor
 # Copyright 2006  Peter Gebauer. Licensed as Public Domain.

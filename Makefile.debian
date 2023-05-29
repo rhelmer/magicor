@@ -11,10 +11,10 @@
 # dist				Create source and data tarballs.
 
 # Do not change this unless you know what you're doing.
-PYTHON_VERSION=$(shell python -c "import sys; print sys.version[:3]")
+PYTHON_VERSION=$(shell python -c "import sys; print(sys.version[:3])")
 #PYTHON_VERSION=2.4
 
-# The prefix is added as a prefix (duh) to all other paths as default.
+# The prefix is added as a prefix to all other paths as default.
 PREFIX=$(DESTDIR)
 # Where the magicor package will be installed, including final directory.
 PYTHON_LIB=$(PREFIX)/usr/lib/python$(PYTHON_VERSION)/site-packages/magicor

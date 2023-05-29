@@ -13,6 +13,8 @@ import os, warnings, textwrap
 import pygame, pygame.image, pygame.sprite,  pygame.mixer
 from pygame.mixer import music
 
+import asyncio
+
 from magicor.resources import getResources
 
 _CONFIG = None
@@ -295,7 +297,7 @@ class GameEngine(object):
                 if callable(f):
                     f(event)
 
-    def start(self, state):
+    async def start(self, state):
         self.doFrame = True
         while state:
             if self.byFrame:
@@ -307,6 +309,7 @@ class GameEngine(object):
                 pygame.display.flip()
             self.clock.tick(25)
             state = next(state)
+            await asyncio.sleep(0)  # Very important, and keep it 0
 
 
 class ConfigDict(dict):

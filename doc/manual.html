@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Peter Gebauer" />
+  <title>Magicor manual</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+
+      p,
+      h2,
+      h3 {
+        orphans: 3;
+        widows: 3;
+      }
+
+      h2,
+      h3,
+      h4 {
+        page-break-after: avoid;
+      }
+    }
+
+    p {
+      margin: 1em 0;
+    }
+
+    a {
+      color: #1a1a1a;
+    }
+
+    a:visited {
+      color: #1a1a1a;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin-top: 1.4em;
+    }
+
+    h5,
+    h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+
+    h6 {
+      font-weight: normal;
+    }
+
+    ol,
+    ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+
+    li>ol,
+    li>ul {
+      margin-top: 0;
+    }
+
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+
+    .sourceCode {
+      background-color: transparent;
+      overflow: visible;
+    }
+
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+
+    table caption {
+      margin-bottom: 0.75em;
+    }
+
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+
+    #TOC li {
+      list-style: none;
+    }
+
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+
+    code {
+      white-space: pre-wrap;
+    }
+
+    span.smallcaps {
+      font-variant: small-caps;
+    }
+
+    span.underline {
+      text-decoration: underline;
+    }
+
+    div.column {
+      display: inline-block;
+      vertical-align: top;
+      width: 50%;
+    }
+
+    div.hanging-indent {
+      margin-left: 1.5em;
+      text-indent: -1.5em;
+    }
+
+    ul.task-list {
+      list-style: none;
+    }
+
+    .display.math {
+      display: block;
+      text-align: center;
+      margin: 0.5rem auto;
+    }
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header id="title-block-header">
+    <h1 class="title">Magicor manual</h1>
+    <p class="author">Peter Gebauer</p>
+  </header>
+  <h1 id="preface">Magicor, the puzzle game</h1>
+  <table>
+    <tbody>
+      <tr class="odd">
+        <td>
+          <p><img src="screenshot01.png" /></p>
+        </td>
+        <td>This is a fast-paced puzzle game that you can play for five minutes or hours, depending on how much time you
+          have and how much you like it. The objective is to extinguish burning fires using already blocks of ice,
+          either created by the player or the game itself. Although learning the game physics and controls is easy,
+          solving some of the levels is not.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>The game is free (as in freedom of speech), licensed as Public Domain, and it has been developed using all free
+    tools and libraries on free platforms. Enjoy it! (note: the game is also ported to Windows, thanks Claudio!) See
+    link <a href="#license">#license</a> for license information.</p>
+  <h1 id="objective">Game objective</h1>
+  <p>The objective of the game is to extinguish all bunring fires. You do this by pushing or dropping ice blocks so they
+    collide with the fire using the player.</p>
+  <table>
+    <caption>Common objects in the game</caption>
+    <tbody>
+      <tr class="odd">
+        <td>Player</td>
+        <td>
+          <p><img src="player.png" /></p>
+        </td>
+      </tr>
+      <tr class="even">
+        <td>Ice block</td>
+        <td>
+          <p><img src="ice.png" /></p>
+        </td>
+      </tr>
+      <tr class="odd">
+        <td>Fire</td>
+        <td>
+          <p><img src="fire.png" /></p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p>To push an ice block you need only walk towards it, try to walk through it even, the player will kick the ice block
+    once in contact with it and the block will slide until it hits a wall or falls down.</p>
+  <p><img src="screenshot02.png" alt=" Like the arrows suggest, just walk towards the ice block. " /></p>
+  <p><img src="screenshot03.png"
+      alt=" Try walking past the ice block, the player will kick it and the ice block will slide towards the fire, eventually hitting it and thus extinguishing it. " />
+  </p>
+  <p>That is how you push/slide an already existing block of ice, but the player can also create and destroy ice blocks.
+    The player is limited to creating and destroying ice blocks <em>below</em> the player left and right sides.</p>
+  <p><img src="screenshot04.png"
+      alt=" A clear case of having to create ones own ice blocks. Just walk up to the ledge and press the action button. The tutorial arrows indicate that something needs to be done no less than four times. " />
+  </p>
+  <p><img src="screenshot05.png"
+      alt=" *Swosh* and there&#39;s the newly created block of ice. The block will freeze stuck to the ledge so the player can safely stand on it. " />
+  </p>
+  <p><img src="screenshot06.png"
+      alt=" The player has now created a walking bridge of connected ice blocks all the way to above the fire. " /></p>
+  <p><img src="screenshot07.png"
+      alt=" We step back one unit and sever the connection by the destroying a block of ice so that the rightmost ice block will be disconnected. Once disconnected the ice block will start to fall towards the fire. Again, when hitting the fire it will be extinguished; mission accomplished! " />
+  </p>
+  <p>Pushing ice blocks can only be done if the ice block has no obstacles on the other side. Even another ice block
+    will stop an ice block from being pushed.</p>
+  <p><img src="screenshot08.png" alt=" These ice blocks are too heavy to push. " /></p>
+  <p><img src="screenshot09.png"
+      alt=" So the player simply climbs up. Note that the player can only climb on top of blocks that are reachable. (one block worth of height) " />
+  </p>
+  <p>Once on top of ice blocks you can destroy one of them or jump down on the other side. This climbing behaviour is
+    activated every time you try to push an ice block that is next to another ice block or a solid ledge.</p>
+  <p>An explanation of falling blocks: unless single ice blocks (or even a row of connected ice blocks) is supported by
+    solids below or connected to solids, it will start to fall until it hits a solid, is destroyed or falls into
+    obvlivion (below screen visibility).</p>
+  <h1 id="complicating">Complicating the game</h1>
+  <p>You didn't think all levels would be as easy as the tutorial ones, did you? There are several additional elements
+    to make solving the levels more difficult.</p>
+  <table>
+    <caption>Some additional objects</caption>
+    <tbody>
+      <tr class="odd">
+        <td>Spikes</td>
+        <td>
+          <p><img src="spikes.png" /></p>
+        </td>
+        <td>These are nearly invisible, burried into solids. If the player or an ice block is near this trap, spikes
+          will shoot out killing the player or destroying the ice block.</td>
+      </tr>
+      <tr class="even">
+        <td>Active lava</td>
+        <td>
+          <p><img src="lava.png" /></p>
+        </td>
+        <td>Active lava will kill the player and destroy ice if touched.</td>
+      </tr>
+      <tr class="odd">
+        <td>Dormant lava</td>
+        <td>
+          <p><img src="dormant-lava.png" /></p>
+        </td>
+        <td>This type of dormant lava is harmless to both player and ice blocks, but beware: lava can be ignited if a
+          burning fire should happen to touch it, making it active, lethal lava.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>To make things even worse many levels will have moving enemies that will kill the player on touch. Lucky for the
+    player, these enemies can be destroyed by squishing them between an ice block and a solid or another ice block.
+    Depending on the level theme these enemies move and look differently, below are some examples.</p>
+  <table>
+    <caption>Enemy examples</caption>
+    <tbody>
+      <tr class="odd">
+        <td>Scarab (from Egypt theme)</td>
+        <td>
+          <p><img src="scarab.png" /></p>
+        </td>
+      </tr>
+      <tr class="even">
+        <td>Blob (from Space theme)</td>
+        <td>
+          <p><img src="blob.png" /></p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p>As you can see, with the additional, very dangerous objects this game can become quite complicated in spite of it's
+    simple physics engine. Many levels will require logic and timing in addition to a heap of intuition. Good luck!</p>
+  <h1 id="configs">Configuration</h1>
+  <p>There are several ways to configure Magicor; edit configuration file, add command line options or use the in-game
+    options menu.</p>
+  <table>
+    <caption>Enemy examples</caption>
+    <tbody>
+      <tr class="odd">
+        <td>Fullscreen</td>
+        <td>True for fullscren, false for windowed.</td>
+      </tr>
+      <tr class="even">
+        <td>Eyecandy</td>
+        <td>Set to false to disable extra nice graphical effects.</td>
+      </tr>
+      <tr class="odd">
+        <td>Sound</td>
+        <td>Set to false to disable sound. (if both sound and music are disabled, audio will not be initialized at all)
+        </td>
+      </tr>
+      <tr class="even">
+        <td>Music</td>
+        <td>Set to false to disable music. (if both sound and music are disabled, audio will not be initialized at all)
+        </td>
+      </tr>
+      <tr class="odd">
+        <td>Sound vol</td>
+        <td>Set the sound volume from 0 (silent) to 100 (loud).</td>
+      </tr>
+      <tr class="even">
+        <td>Music vol</td>
+        <td>Set the music volume from 0 (silent) to 100 (loud).</td>
+      </tr>
+      <tr class="odd">
+        <td>Joystick</td>
+        <td>Toggle joystick support. If disabled the joystick will not be initialized at all.</td>
+      </tr>
+    </tbody>
+  </table>
+  <h2 id="configs-options">In-game options</h2>
+  <p>The in-game options screen will give you the following options:</p>
+  <ul>
+    <li>
+      <p>Fullscreen (toggle using action)</p>
+    </li>
+    <li>
+      <p>Eyecandy (toggle using action)</p>
+    </li>
+    <li>
+      <p>Sound (toggle using action)</p>
+    </li>
+    <li>
+      <p>Music (toggle using action)</p>
+    </li>
+    <li>
+      <p>Sound vol (change using left/right)</p>
+    </li>
+    <li>
+      <p>Music vol (change using left/right)</p>
+    </li>
+    <li>
+      <p>Keyboard controls (enter submenu using action)</p>
+    </li>
+    <li>
+      <p>Joystick controls (enter submenu using action)</p>
+    </li>
+  </ul>
+  <h2 id="configs-controls">Controls</h2>
+  <ul>
+    <li>
+      <p>Up (move up in menus)</p>
+    </li>
+    <li>
+      <p>Down (move down in menus)</p>
+    </li>
+    <li>
+      <p>Left (move player left or change menu option)</p>
+    </li>
+    <li>
+      <p>Right (move player right or change menu option)</p>
+    </li>
+    <li>
+      <p>Action (create/destroy ice, toggle or select menu option)</p>
+    </li>
+    <li>
+      <p>Start (obsolete, use Action instead)</p>
+    </li>
+    <li>
+      <p>Escape (activate/deactivate menu; only customizable for joystick, always ESCAPE-key for keyboard controls)</p>
+    </li>
+  </ul>
+  <h2>Configuration files</h2>
+  <p>The global configuration file should be located in <em>/etc/magicor.conf</em> or
+    <em>/usr/local/etc/magicor.conf</em> on GNU and BSD systems.</p>
+  <p>The personal/user-specific configuration file is found in <em>~/.magicor/magicor.conf</em> and it will override any
+    global settings.</p>
+  <p>Regardless of platform and global/user-specific configuration, the contents of it will be the same. Here's a
+    typical example:</p>
+  <pre><code>default_tile = tiles/stone
+eyecandy = 1
+joystick = 1
+music = 1
+music_vol = 100
+sound = 1
+sound_vol = 100
+        </code></pre>
+  <p>Quite simple to follow. "default_tile" can be ignored, but note that boolean values are either 0 or 1.</p>
+  <h2>Command line options</h2>
+  <p>This is the output from running the help-option:</p>
+  <pre><code>usage: Magicor.py [options]
+
+options:
+  -h, --help            show this help message and exit
+  -c CONFIGPATH, --config=CONFIGPATH
+                        use this default config, default ###CONFIG_PATH###
+  -j JOYSTICK, --joystick=JOYSTICK
+                        enable/disable joystick
+  -m MUSIC, --music=MUSIC
+                        enable/disable music
+  -s SOUND, --sound=SOUND
+                        enable/disable sound
+  -f FULLSCREEN, --fullscreen=FULLSCREEN
+                        enable/disable fullscreen
+        </code></pre>
+  <h1 id="license">Appendix - License</h1>
+  <p>Copyright 2006 Peter Gebauer (see README for info on contributed work)</p>
+  <p>This project and all of it's content, regardless of copyright holder, is released as Public Domain as stated:</p>
+  <p>The person or persons who have associated work with this document (the "Dedicator" or "Certifier") hereby either
+    (a) certifies that, to the best of his knowledge, the work of authorship identified is in the public domain of the
+    country from which the work is published, or (b) hereby dedicates whatever copyright the dedicators holds in the
+    work of authorship identified below (the "Work") to the public domain. A certifier, moreover, dedicates any
+    copyright interest he may have in the associated work, and for these purposes, is described as a "dedicator" below.
+  </p>
+  <p>A certifier has taken reasonable steps to verify the copyright status of this work. Certifier recognizes that his
+    good faith efforts may not shield him from liability if in fact the work certified is not in the public domain.</p>
+  <p>Dedicator makes this dedication for the benefit of the public at large and to the detriment of the Dedicator's
+    heirs and successors. Dedicator intends this dedication to be an overt act of relinquishment in perpetuity of all
+    present and future rights under copyright law, whether vested or contingent, in the Work. Dedicator understands that
+    such relinquishment of all rights includes the relinquishment of all rights to enforce (by lawsuit or otherwise)
+    those copyrights in the Work.</p>
+  <p>Dedicator recognizes that, once placed in the public domain, the Work may be freely reproduced, distributed,
+    transmitted, used, modified, built upon, or otherwise exploited by anyone for any purpose, commercial or
+    non-commercial, and in any way, including by methods that have not yet been invented or conceived.</p>
+</body>
+
+</html>

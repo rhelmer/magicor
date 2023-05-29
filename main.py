@@ -11,7 +11,8 @@ async def main():
     # and it is fired only when VSYNC occurs
     # Usually 1/60 or more times per seconds on desktop, maybe less on some mobile devices
 
-    conf = getConfig()
+    conf = getConfig(['etc/magicor.conf'])
+    print(conf)
     gameEngine = GameEngine(conf)
     await gameEngine.start(CopyrightNoticeState(conf, None, gameEngine.screen))
 

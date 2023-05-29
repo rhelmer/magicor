@@ -1,4 +1,5 @@
-Hello there, old-school gamer! For installation instructions see [INSTALL.md](INSTALL.md).
+Hello there, old-school gamer! For installation instructions see [INSTALL.md](INSTALL.md),
+and see the [manual](doc/manual.md) for instructions on how to play.
 
 Contents
 -------

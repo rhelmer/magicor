@@ -445,7 +445,7 @@ class PhysicsSprite(AnimatedSprite):
     def blockedBelow(self):
         x, y = self.x / 32, (self.y + self.height) / 32
         xr = (self.x + self.width - 1) / 32
-        if (xr < 0 or xr >= 19):
+        if (xr < 0 or xr > 20):
             return True
         elif (y < self.level.height
             and (self.level[x, y]
@@ -461,7 +461,7 @@ class PhysicsSprite(AnimatedSprite):
     def blockedAbove(self):
         x, y = self.x / 32, (self.y - 1) / 32
         xr = (self.x + self.width - 1) / 32
-        if (xr < 0 or xr >= 19 or self.level[xr, y]):
+        if (xr < 0 or xr > 20 or self.level[xr, y]):
             return True
         elif (y >= 0
               and (self.level[x, y]
@@ -477,7 +477,7 @@ class PhysicsSprite(AnimatedSprite):
         x, y = (self.x + self.width) / 32, (self.y + self.height) / 32
         if (y < self.level.height
             and (self.x + self.width >= self.level.width * 32
-                 or x >= 19
+                 or x > 20
                  or self.level[x, y]
                  or self.blocksGroup.getSprite(self.x + self.width,
                                                self.y + self.height,

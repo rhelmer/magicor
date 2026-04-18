@@ -29,10 +29,13 @@ if sys.platform=='win32':
                   help="use this config path, default is magicor directory.")
     baseConf="./magicor-editor.conf"
 else:
-    parser.add_option("-c", "--config", dest="configPath",
-                  default = "###CONFIG_PATH###",
-                  help="use this default config, default ###CONFIG_PATH###")
     baseConf="~/.magicor/magicor-editor.conf"
+    _default_config = "###CONFIG_PATH###"
+    if _default_config.startswith("###"):
+        _default_config = os.path.expanduser(baseConf)
+    parser.add_option("-c", "--config", dest="configPath",
+                  default = _default_config,
+                  help="use this default config, default ###CONFIG_PATH###")
 ##<--win
 
 (options, args) = parser.parse_args()

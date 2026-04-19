@@ -92,7 +92,7 @@ class OptionsState(BaseState):
         self.options.append((option, callback))
 
     def drawOption(self, y, option):
-        self.text.draw(option.title, 0, y)
+        self.text.draw(option.title, 0, y, False)
         if hasattr(option, "value"):
             if isinstance(option, BoolOption):
                 value = option.value and "true" or "false"
@@ -103,7 +103,8 @@ class OptionsState(BaseState):
             self.text.draw(value,
                            self.screen.get_width()
                            - self.text.getWidth("%s"%value),
-                           y)
+                           y,
+                           False)
 
     def run(self):
         self.control()
@@ -112,7 +113,8 @@ class OptionsState(BaseState):
         for option in (o[0] for o in self.options):
             y = line * self.text.font.get_height()
             if line == self.selected:
-                self.screen.fill(0xff,
+                # Was 0xff (integer 255) which maps to pure blue on 32-bit surfaces.
+                self.screen.fill((200, 200, 220),
                                  (0, y,
                                   self.screen.get_width(),
                                   self.text.font.get_height()))

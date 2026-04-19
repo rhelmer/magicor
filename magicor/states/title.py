@@ -52,7 +52,7 @@ class TitleState(MenuState):
         for i in range(10):
             self.lights.add(WalkingPenguin(x, 450, 550, self.ice))
             x -= random.randint(32, 128)
-        self.lights.sort(lambda a, b: cmp(a.y, b.y))
+        self.lights.sort()
         if self.logo:
             self.distRect = pygame.Rect((0, 0, 1, self.logo.get_height()))
         if startMusic:
@@ -151,14 +151,13 @@ class LevelSelectState(BaseState):
                     level.theme = theme or None
                     self.levels.append(level)
                     self.levelPaths[level] = path + filename
-        #self.levels.sort(lambda x, y:
-        #                 cmp(x.theme, y.theme)
-        #                 or cmp(x.title, y.title))
-	#start possibly at a level never tried
+        self.levels.sort(key=lambda x: ((x.theme or ""), (x.title or "")))
+        # Start at a level never tried, else resume from save data.
         for i in range(len(self.levels)):
-            if (not self.config.getInt("time_"+self.levels[i].title)):
+            if not self.config.getInt("time_"+self.levels[i].title):
                 self.selected = i
                 break
+        else:
             if self.data.lastLevelFinished:
                 for i in range(len(self.levels)):
                     if (self.levels[i].id == self.data.lastLevelFinished
@@ -170,9 +169,9 @@ class LevelSelectState(BaseState):
                     if self.levels[i].id == self.data.lastLevel:
                         self.selected = i
                         break
-            if config.getBool("music"):
-                self.resources.playMusic("music/menu")
-            self.updateInfo()
+        if self.config.getBool("music"):
+            self.resources.playMusic("music/menu")
+        self.updateInfo()
 
     def control(self):
         if self.controls.escape:

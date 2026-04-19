@@ -133,10 +133,15 @@ class AnimationGroup(pygame.sprite.Group):
         for sprite in self.sprites():
             sprite.draw(surface)
 
-    def sort(self, f = None):
-        if not f:
-            f = self.sortFunc
-        self.sprites().sort(key=lambda b: b.y)
+    def sort(self, f=None, **kwargs):
+        """Order sprites for drawing. *f* is ignored (legacy Py2 cmp callback)."""
+        key = kwargs.pop("key", None)
+        if kwargs:
+            raise TypeError("sort() got an unexpected keyword argument %r"
+                            % next(iter(kwargs)))
+        if key is None:
+            key = lambda b: getattr(b, "y", 0)
+        self.sprites().sort(key=key)
 
     def add(self, *sprites):
         pygame.sprite.Group.add(self, *sprites)

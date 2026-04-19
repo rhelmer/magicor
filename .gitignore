@@ -2,5 +2,6 @@
 *~
 *.bak
 dist
+debug
 .venv
 .DS_Store

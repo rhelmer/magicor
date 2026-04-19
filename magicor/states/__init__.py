@@ -101,7 +101,7 @@ class MenuState(BaseState):
             else:
                 self.text.font = self.inactiveFont
             self.text.draw(selector[0].lower(),
-                           middle - self.text.getWidth(selector[0]) / 2,
+                           middle - self.text.getWidth(selector[0].lower()) / 2,
                            y + i * self.text.font.get_height(),
                            False)
             i += 1

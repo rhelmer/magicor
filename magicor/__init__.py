@@ -42,7 +42,9 @@ def set_group(key, val):
     g_groups[key]=val
 
 class Text(object):
-    TEXT_INDEX = "abcdefghijklmnopqrstuvwxyz0123456789.,!?"
+    # Bitmap strip in info.png has physical columns for w,x,y,z in order ... w,y,x,z
+    # (not ... w,x,y,z). Match that so "y" and "x" map to the correct glyph cells.
+    TEXT_INDEX = "abcdefghijklmnopqrstuvwyxz0123456789.,!?"
 
     def __init__(self, surface, font, maxWidth = None):
         self.setSurface(surface, maxWidth)
@@ -57,31 +59,51 @@ class Text(object):
 
     def setFont(self, font):
         self.font = font
-        self.width = self.font.get_width() / len(self.TEXT_INDEX)
+        n = len(self.TEXT_INDEX)
+        fw = int(self.font.get_width())
+        # Pixel-accurate glyph slicing: when the sheet divides evenly (bundled fonts),
+        # use fixed cell geometry only — rounding fw/n avoids x/y mis-selection.
+        if fw % n == 0:
+            self._cell = fw // n
+            self._advance = float(self._cell)
+        else:
+            self._cell = None
+            self._advance = fw / float(n)
+        self.width = self._advance
         self.height = self.font.get_height()
 
     def getWidth(self, s):
-        width = self.font.get_width() / len(self.TEXT_INDEX)
-        return width * len(s)
+        return self._advance * len(s)
+
+    def _glyph_rect(self, index):
+        n = len(self.TEXT_INDEX)
+        if self._cell is not None:
+            c = self._cell
+            return pygame.Rect(index * c, 0, c, self.height)
+        fw = int(self.font.get_width())
+        left = int(round(index * fw / n))
+        right = int(round((index + 1) * fw / n))
+        w = max(1, right - left)
+        return pygame.Rect(left, 0, w, self.height)
 
     def draw(self, s, x, y, wrap = True):
         s = s.lower()
-        srcr = pygame.Rect((0, 0,
-                            self.width,
-                            self.height))
         if wrap:
-            ss = textwrap.wrap(s, self.maxWidth / self.width)
+            cols = max(1, int(self.maxWidth / self._advance))
+            ss = textwrap.wrap(s, cols)
         else:
             ss = [s]
         yy = y
         for l in ss:
-            xx = x
+            xx = float(x)
             for c in l:
                 i = self.TEXT_INDEX.find(c)
                 if i >= 0:
-                    srcr.left = i * self.width
-                    self.surface.blit(self.font, (xx, yy), srcr)
-                xx += self.width
+                    self.surface.blit(
+                        self.font,
+                        (int(round(xx)), int(round(yy))),
+                        self._glyph_rect(i))
+                xx += self._advance
                 if xx - x >= self.maxWidth:
                     break
             yy += self.height

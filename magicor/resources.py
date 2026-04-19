@@ -76,7 +76,21 @@ class Resources(object):
     def _loadImage(self, path, name):
         fn = self.findAlternative(path, name, self.SUPPORTED_IMAGES)
         if fn:
-            return pygame.image.load(fn)
+            print("loading image from %s"%fn)
+            try:
+                return pygame.image.load(fn)
+            except pygame.error as e:
+                # Some pygame builds lack SDL_image PNG/JPEG support; Pillow decodes instead.
+                try:
+                    from PIL import Image
+                except ImportError:
+                    raise e
+                try:
+                    pil = Image.open(fn).convert("RGBA")
+                    return pygame.image.frombytes(
+                        pil.tobytes(), pil.size, "RGBA")
+                except Exception:
+                    raise e
         return None
 
     def _loadMusic(self, path, name):

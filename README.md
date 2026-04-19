@@ -1,6 +1,18 @@
 Hello there, old-school gamer! For installation instructions see [INSTALL.md](INSTALL.md),
 and see the [manual](doc/manual.md) for instructions on how to play.
 
+From a source checkout you can run the game with [uv](https://docs.astral.sh/uv/)
+without a system-wide install:
+
+```sh
+uv sync
+uv run python Magicor.py
+```
+
+That installs pygame and Pillow from `pyproject.toml`. Pillow is used as a fallback
+when SDL_image cannot decode PNGs on some pygame builds. Optional settings go in
+`~/.magicor/magicor.conf` if you create one (see `etc/magicor.conf` for available keys).
+
 Contents
 -------
 1  Copyright, license and contributors

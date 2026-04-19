@@ -27,10 +27,14 @@ if sys.platform=='win32':
                   help="use this config path, default is magicor directory.")
     baseConf="./magicor.conf"
 else:
-    parser.add_option("-c", "--config", dest="configPath",
-                  default = "###CONFIG_PATH###",
-                  help="use this default config, default ###CONFIG_PATH###")
     baseConf="~/.magicor/magicor.conf"
+    # Makefile substitutes ###CONFIG_PATH### with the system path when installing.
+    _default_config = "###CONFIG_PATH###"
+    if _default_config.startswith("###"):
+        _default_config = os.path.expanduser(baseConf)
+    parser.add_option("-c", "--config", dest="configPath",
+                  default = _default_config,
+                  help="use this default config, default ###CONFIG_PATH###")
 
 parser.add_option("-j", "--joystick",
                   action="store", type="int", dest="joystick",

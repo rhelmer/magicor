@@ -3,6 +3,7 @@
 # Magicor
 # Copyright 2006  Peter Gebauer. Licensed as Public Domain.
 # (see LICENSE for more info)
+import asyncio
 import sys, os
 
 def change_to_correct_path(): #taken from pygame wiki cookbook
@@ -54,6 +55,10 @@ parser.add_option("-f", "--fullscreen",
                   help="enable/disable fullscreen")
 parser.add_option("-d","--dev", type="int", dest= "devmode",
                   default=None, help="enable dev keys")
+parser.add_option("-t", "--touch",
+                  action="store", type="int", dest="touch",
+                  default=None,
+                  help="enable on-screen touch/mouse controls")
 parser.add_option("-k","--keysprintdbg",type="string", dest="printkeys",default="",help="keys to enable selective printing of debug info. Separator is ':'")
 (options, args) = parser.parse_args()
 
@@ -74,6 +79,10 @@ if options.fullscreen != None:
     conf["fullscreen"] = bool(options.fullscreen)
 if options.devmode != None:
     conf["devmode"] = bool(options.devmode)
+if options.touch != None:
+    conf["touch_controls"] = options.touch
 parse_printkeys(options.printkeys)
 gameEngine = GameEngine(conf)
-gameEngine.start(CopyrightNoticeState(conf, None, gameEngine.screen))
+asyncio.run(
+    gameEngine.start(CopyrightNoticeState(conf, None, gameEngine.screen))
+)

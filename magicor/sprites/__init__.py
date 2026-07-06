@@ -5,7 +5,7 @@ Copyright 2006  Peter Gebauer. Licensed as Public Domain.
 (see LICENSE for more info)
 """
 
-import pygame.sprite
+import pygame
 from magicor.resources import getResources
 from operator import itemgetter
 from magicor import g_printkeys,g_devflags,dbgPrint

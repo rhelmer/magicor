@@ -5,8 +5,7 @@ Copyright 2006  Peter Gebauer. Licensed as Public Domain.
 (see LICENSE for more info)
 """
 
-import pygame, time, os, warnings
-from pygame.mixer import music
+import pygame, time, os, sys, warnings
 
 from magicor import Text, set_group
 from magicor.resources import ResourceNotFound
@@ -27,18 +26,15 @@ from magicor.sprites.misc import Direction
 class PlayMenuState(MenuState):
 
     def __init__(self, config, data, screen, play):
-        MenuState.__init__(self,
-                           config, data,
-                           screen,
-                           [("retry", PlayState, config, data, screen,
-                             play.level, play.previous, False),
-                            ("options", MainOptionsState,
-                             config, data, screen, self),
-                            ("level selection",
-                             play.previous, config, data, screen),
-                            ("quit", None)
-                            ]
-                           )
+        selectors = [("retry", PlayState, config, data, screen,
+                      play.level, play.previous, False),
+                     ("options", MainOptionsState,
+                      config, data, screen, self),
+                     ("level selection",
+                      play.previous, config, data, screen)]
+        if sys.platform != "emscripten":
+            selectors.append(("quit", None))
+        MenuState.__init__(self, config, data, screen, selectors)
         self.play = play
         self.source = pygame.Surface(self.screen.get_size())
         self.source.blit(self.screen, (0, 0))

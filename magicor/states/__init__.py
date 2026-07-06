@@ -4,9 +4,8 @@ Magicor states are defined here.
 Copyright 2006  Peter Gebauer. Licensed as Public Domain.
 (see LICENSE for more info)
 """
-import math, random, os, warnings
+import math, random, os, sys, warnings
 import pygame
-from pygame.locals import *
 
 from magicor import State, Text, Controls
 from magicor.level import Level
@@ -37,13 +36,13 @@ class BaseState(State):
         if not data:
             data = StateData(
                 controls = Controls(
-                {config.get("key-up", K_UP): "keyUp",
-                 config.get("key-down", K_DOWN): "keyDown",
-                 config.get("key-left", K_LEFT): "keyLeft",
-                 config.get("key-right", K_RIGHT): "keyRight",
-                 config.get("key-escape", K_ESCAPE): "keyEscape",
-                 config.get("key-action", K_SPACE): "keyAction",
-                 config.get("key-start", K_RETURN): "keyStart",
+                {config.get("key-up", pygame.K_UP): "keyUp",
+                 config.get("key-down", pygame.K_DOWN): "keyDown",
+                 config.get("key-left", pygame.K_LEFT): "keyLeft",
+                 config.get("key-right", pygame.K_RIGHT): "keyRight",
+                 config.get("key-escape", pygame.K_ESCAPE): "keyEscape",
+                 config.get("key-action", pygame.K_SPACE): "keyAction",
+                 config.get("key-start", pygame.K_RETURN): "keyStart",
                  },
                 {config.get("joy-up", "axis 5 neg"): "joyUp",
                  config.get("joy-down", "axis 5 pos"): "joyDown",
@@ -59,10 +58,11 @@ class BaseState(State):
         self.controls = data.controls
         self.screen = screen
         self.resources = getResources()
-        self.resources.addResources("tiles")
-        self.resources.addResources("sprites")
-        self.resources.addResources("samples")
         self.resources.addResources("fonts")
+        if sys.platform != "emscripten":
+            self.resources.addResources("tiles")
+            self.resources.addResources("sprites")
+            self.resources.addResources("samples")
 
     def eventJoystick(self):
         if self.config.get("joystick", 1) and self.joystick:
@@ -79,6 +79,31 @@ class BaseState(State):
         self.controls.unsetKey(event.key)
 
 
+class MenuRepeatGate(object):
+    """Limit how fast held up/down inputs advance menus."""
+
+    REPEAT_DELAY_MS = 180
+
+    def __init__(self):
+        self._last_nav = 0
+        self._repeat_dir = None
+
+    def ready(self, direction, active):
+        if not active:
+            self._repeat_dir = None
+            self._last_nav = 0
+            return False
+        now = pygame.time.get_ticks()
+        if self._repeat_dir != direction:
+            self._repeat_dir = direction
+            self._last_nav = now
+            return True
+        if now - self._last_nav >= self.REPEAT_DELAY_MS:
+            self._last_nav = now
+            return True
+        return False
+
+
 class MenuState(BaseState):
 
     def __init__(self, config, data, screen, selectors):
@@ -89,6 +114,7 @@ class MenuState(BaseState):
         self.selectors = selectors
         self.selected = 0
         self.text = Text(screen, self.activeFont, screen.get_width())
+        self._menu_repeat = MenuRepeatGate()
 
     def renderMenu(self, y, surface = None):
         if not surface:
@@ -107,10 +133,10 @@ class MenuState(BaseState):
             i += 1
             
     def control(self):
-        if self.controls.up:
+        if self._menu_repeat.ready("up", self.controls.up):
             self.selected = (self.selected - 1) % len(self.selectors)
             self.resources.playSound("samples/menu")
-        elif self.controls.down:
+        elif self._menu_repeat.ready("down", self.controls.down):
             self.selected = (self.selected + 1) % len(self.selectors)
             self.resources.playSound("samples/menu")
         elif self.controls.start or self.controls.action:

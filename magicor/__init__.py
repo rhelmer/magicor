@@ -65,6 +65,20 @@ class Text(object):
         width = self.font.get_width() / len(self.TEXT_INDEX)
         return width * len(s)
 
+    def drawCentered(self, s, y, wrap=False):
+        s = s.lower()
+        if wrap:
+            lines = textwrap.wrap(
+                s, max(8, int(self.maxWidth / self.width)))
+        else:
+            lines = [s]
+        yy = y
+        for line in lines:
+            x = self.surface.get_width() / 2 - self.getWidth(line) / 2
+            self.draw(line, x, yy, wrap=False)
+            yy += self.height
+        return yy
+
     def draw(self, s, x, y, wrap = True):
         s = s.lower()
         srcr = pygame.Rect((0, 0,

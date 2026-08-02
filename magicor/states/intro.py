@@ -4,6 +4,7 @@ Intro like states.
 Copyright 2006  Peter Gebauer. Licensed as Public Domain.
 (see LICENSE for more info)
 """
+import sys
 import time
 from magicor import Text
 from magicor.states import BaseState
@@ -11,7 +12,8 @@ from magicor.states import BaseState
 
 class CopyrightNoticeState(BaseState):
 
-    PROMPT = "click, tap, or press any key"
+    PROMPT_LINES = ("click or tap", "to continue")
+    WASM_PROMPT_LINES = ("tap to continue",)
 
     def __init__(self, config, data, screen):
         BaseState.__init__(self, config, data, screen)
@@ -54,6 +56,11 @@ class CopyrightNoticeState(BaseState):
     def eventFingerDown(self, event):
         self._advance = True
         
+    def _prompt_lines(self):
+        if sys.platform == "emscripten":
+            return self.WASM_PROMPT_LINES
+        return self.PROMPT_LINES
+
     def control(self):
         if (self._advance
             or self.controls.escape
@@ -73,13 +80,13 @@ class CopyrightNoticeState(BaseState):
                                - self.text.getWidth(l) / 2,
                                y)
             y += self.text.font.get_height()
-        credits_bottom = y
-        prompt_y = credits_bottom + self.text.font.get_height()
-        self.text.draw(self.PROMPT,
-                       self.screen.get_width() / 2
-                       - self.text.getWidth(self.PROMPT) / 2,
-                       prompt_y)
-        y = self.screen.get_height() - self.highest / 2
+        logo_top = self.screen.get_height() - self.highest - 24
+        prompt_lines = self._prompt_lines()
+        prompt_y = logo_top - len(prompt_lines) * self.text.font.get_height() - 16
+        for line in prompt_lines:
+            self.text.drawCentered(line, prompt_y, wrap=False)
+            prompt_y += self.text.font.get_height()
+        y = logo_top + self.highest / 2
         x = self.startX
         for l in self.logos:
             self.screen.blit(l, (x, y - l.get_height() / 2))

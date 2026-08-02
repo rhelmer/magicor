@@ -24,12 +24,16 @@ from pathlib import Path
 async def set_load_progress(pct, msg):
     platform.window.eval(
         "(function(){"
+        "window.magicorSetLoadProgress=window.magicorSetLoadProgress||function(p,m){"
         "var s=document.getElementById('status');"
-        "var p=document.getElementById('progress');"
-        f"if(s) s.textContent={json.dumps(msg)};"
-        f"if(p) p.value={int(pct)};"
+        "var f=document.getElementById('progress-fill');"
+        "if(s)s.textContent=m;"
+        "if(f)f.style.width=Math.max(0,Math.min(100,p))+'%';"
+        "};"
+        f"magicorSetLoadProgress({int(pct)},{json.dumps(msg)});"
         "})()"
     )
+    await asyncio.sleep(0)
 
 
 async def custom_site():
@@ -38,7 +42,7 @@ async def custom_site():
 
     platform.window.canvas.style.visibility = "hidden"
 
-    await set_load_progress(5, "Downloading Magicor...")
+    await set_load_progress(8, "Downloading Magicor...")
 
     bundle = "{{cookiecutter.archive}}"
 
@@ -56,11 +60,13 @@ async def custom_site():
     else:
         import tarfile
         async with platform.fopen("{{cookiecutter.archive}}.tar.gz", "rb") as archive:
+            await set_load_progress(18, "Downloading game data...")
             tar = tarfile.open(fileobj=archive, mode="r:gz")
+            await set_load_progress(22, "Unpacking game data...")
             tar.extractall(path=appdir.as_posix(), filter='tar')
             tar.close()
 
-    await set_load_progress(25, "Unpacking game data...")
+    await set_load_progress(28, "Preparing runtime...")
 
     # preloader will change to work dir and prepend it to sys.path
     platform.run_main(PyConfig, loaderhome= appdir / "assets", loadermain=None)
@@ -68,12 +74,16 @@ async def custom_site():
 
     # wait preloading complete : that includes images and wasm compilation of bundled modules
     preload_start = embed.counter()
+    compile_ticks = 0
     while embed.counter()<0:
         cur = embed.counter()
         if preload_start < 0:
             done = min(1.0, max(0.0, 1.0 - (abs(cur) / abs(preload_start))))
-            pct = 25 + int(done * 60)
-            await set_load_progress(pct, "Compiling for your browser...")
+            pct = 28 + int(done * 58)
+        else:
+            compile_ticks += 1
+            pct = min(86, 28 + compile_ticks * 2)
+        await set_load_progress(pct, "Compiling for your browser...")
         await asyncio.sleep(.1)
 
     main = appdir / "assets" / "main.py"
@@ -229,28 +239,21 @@ function show_infobox() {
             text-transform: uppercase;
         }
 
-        #progress {
+        #progress-track {
             width: min(360px, 78vw);
             height: 10px;
-            border: 0;
             border-radius: 999px;
             overflow: hidden;
             background: rgba(255, 255, 255, 0.12);
         }
 
-        #progress::-webkit-progress-bar {
-            background: rgba(255, 255, 255, 0.12);
+        #progress-fill {
+            display: block;
+            height: 100%;
+            width: 0%;
             border-radius: 999px;
-        }
-
-        #progress::-webkit-progress-value {
             background: linear-gradient(90deg, #5eb8ff, #b8e6ff);
-            border-radius: 999px;
-        }
-
-        #progress::-moz-progress-bar {
-            background: linear-gradient(90deg, #5eb8ff, #b8e6ff);
-            border-radius: 999px;
+            transition: width 0.2s ease-out;
         }
 
         #infobox {
@@ -598,7 +601,9 @@ function show_infobox() {
             </div>
             <div class="splash-footer">
                 <div id="status">Loading Magicor...</div>
-                <progress value="0" max="100" id="progress"></progress>
+                <div id="progress-track" aria-hidden="true">
+                    <div id="progress-fill"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -631,7 +636,7 @@ height="{{cookiecutter.height}}px"
     </div>
 
     <div id="immersive-hint" hidden>
-        <button type="button" class="immersive-hint-panel" id="immersive-hint-action">Tap for more space</button>
+        <button type="button" class="immersive-hint-panel" id="immersive-hint-action">Enter fullscreen</button>
     </div>
 
     <div id="infobox" hidden>Loading Magicor...</div>
@@ -696,6 +701,13 @@ frameborder="1"
     <script type="application/javascript">
 
     const GAME_AR = 800 / 600
+
+    globalThis.magicorSetLoadProgress = function(pct, msg) {
+        const status = document.getElementById("status")
+        const fill = document.getElementById("progress-fill")
+        if (status) status.textContent = msg
+        if (fill) fill.style.width = Math.max(0, Math.min(100, pct)) + "%"
+    }
 
     function is_portrait_phone() {
         return window.matchMedia("(max-width: 900px) and (orientation: portrait)").matches
@@ -774,15 +786,24 @@ frameborder="1"
         update_immersive_hint()
     }
 
+    function can_request_fullscreen() {
+        const el = document.getElementById("game-stage") || document.documentElement
+        return !!(el.requestFullscreen || el.webkitRequestFullscreen)
+    }
+
     function update_immersive_hint() {
         const hint = document.getElementById("immersive-hint")
+        const btn = document.getElementById("immersive-hint-action")
         if (!hint) return
         const show = document.documentElement.classList.contains("game-ready")
-            && is_touch_phone()
-            && !is_portrait_phone()
+            && can_request_fullscreen()
             && !is_standalone_pwa()
             && !is_fullscreen()
             && !immersive_hint_dismissed()
+            && (!is_touch_phone() || !is_portrait_phone())
+        if (btn) {
+            btn.textContent = is_touch_phone() ? "Tap for fullscreen" : "Enter fullscreen"
+        }
         hint.hidden = !show
     }
 
@@ -922,6 +943,7 @@ frameborder="1"
             if (immersiveBtn) {
                 immersiveBtn.addEventListener("click", async () => {
                     await try_enter_fullscreen()
+                    await try_lock_landscape()
                     dismiss_immersive_hint()
                 })
             }
@@ -943,11 +965,10 @@ frameborder="1"
                 }
             }, { passive: false })
             const canvas = document.getElementById("canvas")
-            if (canvas) {
+            if (canvas && is_standalone_pwa()) {
                 canvas.addEventListener("pointerdown", () => {
-                    try_enter_fullscreen()
                     try_lock_landscape()
-                }, { once: true })
+                }, { once: true, passive: true })
             }
         }
         fit_game_canvas()

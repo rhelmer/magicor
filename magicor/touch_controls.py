@@ -78,9 +78,9 @@ class TouchControls(object):
         self._button_rects = {name: rect for name, rect, _ in self._layout}
 
     def _build_layout(self):
-        pad = 60
-        arm_gap = 22
-        cx, cy = 96, 504
+        pad = 56
+        arm_gap = 36
+        cx, cy = 100, 508
         half = pad // 2
         action_r = pygame.Rect(700, 488, 84, 84)
         menu_r = pygame.Rect(714, 16, 70, 44)

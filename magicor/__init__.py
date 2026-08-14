@@ -7,13 +7,14 @@ game itself.
 Copyright 2006  Peter Gebauer. Licensed as Public Domain.
 (see LICENSE for more info)
 """
-import os, warnings, textwrap
+import asyncio
+import os, sys, warnings, textwrap
 
 # from pygame.locals import *
-import pygame, pygame.image, pygame.sprite,  pygame.mixer
-from pygame.mixer import music
+import pygame
 
 from magicor.resources import getResources
+from magicor.touch_controls import TouchControls, resolve_touch_controls
 
 _CONFIG = None
 g_groups = {}
@@ -63,6 +64,20 @@ class Text(object):
     def getWidth(self, s):
         width = self.font.get_width() / len(self.TEXT_INDEX)
         return width * len(s)
+
+    def drawCentered(self, s, y, wrap=False):
+        s = s.lower()
+        if wrap:
+            lines = textwrap.wrap(
+                s, max(8, int(self.maxWidth / self.width)))
+        else:
+            lines = [s]
+        yy = y
+        for line in lines:
+            x = self.surface.get_width() / 2 - self.getWidth(line) / 2
+            self.draw(line, x, yy, wrap=False)
+            yy += self.height
+        return yy
 
     def draw(self, s, x, y, wrap = True):
         s = s.lower()
@@ -146,6 +161,13 @@ class Controls(object):
         self.joyAction = False
         self.joyEscape = False
         self.joyStart = False
+        self.touchUp = False
+        self.touchDown = False
+        self.touchLeft = False
+        self.touchRight = False
+        self.touchAction = False
+        self.touchEscape = False
+        self.touchStart = False
         self.joyState = None
 
     def setKey(self, key):
@@ -195,31 +217,31 @@ class Controls(object):
 
     @property
     def up(self):
-        return self.keyUp or self.joyUp
+        return self.keyUp or self.joyUp or self.touchUp
 
     @property
     def down(self):
-        return self.keyDown or self.joyDown
+        return self.keyDown or self.joyDown or self.touchDown
 
     @property
     def left(self):
-        return self.keyLeft or self.joyLeft
+        return self.keyLeft or self.joyLeft or self.touchLeft
 
     @property
     def right(self):
-        return self.keyRight or self.joyRight
+        return self.keyRight or self.joyRight or self.touchRight
 
     @property
     def action(self):
-        return self.keyAction or self.joyAction
+        return self.keyAction or self.joyAction or self.touchAction
 
     @property
     def escape(self):
-        return self.keyEscape or self.joyEscape
+        return self.keyEscape or self.joyEscape or self.touchEscape
 
     @property
     def start(self):
-        return self.keyStart or self.joyStart
+        return self.keyStart or self.joyStart or self.touchStart
 
 class GameEngine(object):
     """
@@ -234,7 +256,7 @@ class GameEngine(object):
         self.doFrame = True
         pygame.display.init()
         pygame.display.set_caption("Magicor")
-        pygame.mouse.set_visible(False)
+        self.touch_controls = None
         for k in ("sound", "joystick", "music", "eyecandy"):
             if k not in config:
                 config[k] = 1
@@ -253,29 +275,58 @@ class GameEngine(object):
         if config.getBool("joystick", True):
             pygame.joystick.init()
         fullscreen = config.getBool("fullscreen", False) and pygame.FULLSCREEN
-        self.screen = pygame.display.set_mode(
-            (800, 600),
-             pygame.DOUBLEBUF
-            | pygame.HWSURFACE
-            | fullscreen,
-            32
+        if sys.platform == "emscripten":
+            self.screen = pygame.display.set_mode((800, 600))
+        else:
+            self.screen = pygame.display.set_mode(
+                (800, 600),
+                pygame.DOUBLEBUF
+                | pygame.HWSURFACE
+                | fullscreen,
+                32,
             )
         self.config = config
+        use_touch = resolve_touch_controls(config)
+        if use_touch:
+            pygame.mouse.set_visible(True)
+            self.touch_controls = TouchControls(self.screen)
+        else:
+            pygame.mouse.set_visible(False)
         paths = []
-        paths.append(config.get("user_path", "~/.magicor"))
-        paths.append(config.get("data_path", "data"))
+        if sys.platform == "emscripten":
+            paths.append(config.get("data_path", "data"))
+        else:
+            paths.append(config.get("user_path", "~/.magicor"))
+            paths.append(config.get("data_path", "data"))
         if "default_tile" not in self.config:
             self.config["default_tile"] = "tiles/stone"
         self.resources = getResources(paths=paths,
                                       sound=config.getBool("sound"),
                                       music=config.getBool("music"))
-        self.resources.soundVol = self.config.getInt("sound_vol")
-        self.resources.musicVol = self.config.getInt("music_vol")
+        self.resources.soundVol = self.config.getInt("sound_vol", 100)
+        self.resources.musicVol = self.config.getInt("music_vol", 100)
         self.clock = pygame.time.Clock()
+
+    def _exit_fullscreen_on_escape(self, state):
+        if sys.platform == "emscripten":
+            return False
+        if not self.config.getBool("fullscreen"):
+            return False
+        if not state.controls.escape:
+            return False
+        self.config["fullscreen"] = 0
+        pygame.display.set_mode(
+            (self.screen.get_width(), self.screen.get_height()),
+            pygame.HWSURFACE | pygame.DOUBLEBUF,
+            32)
+        state.controls.clear()
+        return True
 
     def handleEvents(self, state, events):
         if events:
             for event in events:
+                if self.touch_controls and self.touch_controls.handle_event(event):
+                    continue
                 if ( self.config.get("devmode", False)
                      and event.type == pygame.KEYDOWN ):
                     self.doFrame = True
@@ -295,18 +346,25 @@ class GameEngine(object):
                 if callable(f):
                     f(event)
 
-    def start(self, state):
+    async def start(self, state):
         self.doFrame = True
         while state:
             if self.byFrame:
                 self.doFrame = False
             self.handleEvents(state, pygame.event.get())
             state.eventJoystick()
+            self._exit_fullscreen_on_escape(state)
+            if self.touch_controls:
+                self.touch_controls.sync(state.controls)
             if self.doFrame:
                 state.run()
+                if self.touch_controls:
+                    self.touch_controls.draw(self.screen)
+                    self.touch_controls.end_frame()
                 pygame.display.flip()
             self.clock.tick(25)
             state = next(state)
+            await asyncio.sleep(0)
 
 
 class ConfigDict(dict):
@@ -336,11 +394,21 @@ class ConfigDict(dict):
         return d
 
     @classmethod
-    def parseFile(cls, filename):
+    def _resolve_path(cls, filename):
         filename = os.path.normpath(
-            os.path.abspath(
-            os.path.expanduser(
-            os.path.expandvars(filename))))
+            os.path.expandvars(os.path.expanduser(filename)))
+        if sys.platform == "emscripten":
+            if not filename or filename in ("/", os.sep):
+                filename = "."
+            elif filename.startswith(("/", os.sep)):
+                filename = filename.lstrip("/")
+        else:
+            filename = os.path.abspath(filename)
+        return filename
+
+    @classmethod
+    def parseFile(cls, filename):
+        filename = cls._resolve_path(filename)
         try:
             f = open(filename)
             data = f.read()
@@ -379,17 +447,20 @@ class ConfigDict(dict):
         return 0
 
     def saveFile(self, filename):
-        filename = os.path.normpath(
-            os.path.abspath(
-            os.path.expanduser(
-            os.path.expandvars(filename))))
-        if not os.path.isdir(os.path.dirname(filename)):
-            os.mkdir(os.path.dirname(filename))
+        filename = self._resolve_path(filename)
+        dirname = os.path.dirname(filename)
+        if (dirname
+            and dirname not in (".", "")
+            and not os.path.isdir(dirname)):
+            try:
+                os.mkdir(dirname)
+            except OSError:
+                pass
         try:
             f = open(filename, "w")
             f.write(self.serialize())
             f.close()
-        except IOError as ie:
+        except (IOError, OSError) as ie:
             warnings.warn("error writing config '%s'; %s"%(filename, ie))
         print(("saved config %s"%filename))
 

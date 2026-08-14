@@ -6,9 +6,8 @@ Copyright 2006  Peter Gebauer. Licensed as Public Domain.
 """
 import warnings
 import pygame
-from pygame.mixer import music
 from magicor import Text
-from magicor.states import BaseState
+from magicor.states import BaseState, MenuRepeatGate
 
 class Option(object):
 
@@ -62,6 +61,7 @@ class OptionsState(BaseState):
         self.scrollY = [0] * screen.get_width()
         self.options = []
         self.text = Text(self.screen, self.resources["fonts/info"])
+        self._menu_repeat = MenuRepeatGate()
 
     def control(self):
         if self.controls.escape:
@@ -73,11 +73,11 @@ class OptionsState(BaseState):
             self.setNext(self.previous)
             self.previous.setNext(self.previous)
             self.controls.clear()
-        elif self.controls.up:
+        elif self._menu_repeat.ready("up", self.controls.up):
             self.resources.playSound("samples/menu")
             self.selected = (self.selected - 1) % len(self.options)
             self.controls.clear()
-        elif self.controls.down:
+        elif self._menu_repeat.ready("down", self.controls.down):
             self.resources.playSound("samples/menu")
             self.selected = (self.selected + 1) % len(self.options)
             self.controls.clear()
@@ -175,11 +175,11 @@ class MainOptionsState(OptionsState):
                                   "eyecandy"),
                        self.toggleEyecandy)
         self.addOption(IntOption("sound vol",
-                                 config.getInt("sound_vol"),
+                                 config.getInt("sound_vol", 100),
                                  "sound_vol", 0, 100),
                        self.changeSoundVol)
         self.addOption(IntOption("music vol",
-                                 config.getInt("music_vol"),
+                                 config.getInt("music_vol", 100),
                                  "music_vol", 0, 100),
                        self.changeMusicVol)
         self.addOption(StateOption("keyboard controls", KeyOptionsState))
@@ -232,14 +232,14 @@ class MainOptionsState(OptionsState):
         return True
 
     def changeSoundVol(self):
-        self.resources.soundVol = self.config.getInt("sound_vol")
+        self.resources.soundVol = self.config.getInt("sound_vol", 100)
         if self.config.getBool("sound"):
             self.resources.playSound("samples/menu")
         return True
 
     def changeMusicVol(self):
-        self.resources.musicVol = self.config.getInt("music_vol")
-        music.set_volume(self.resources.musicVol * 0.01)
+        self.resources.musicVol = self.config.getInt("music_vol", 100)
+        pygame.mixer.music.set_volume(self.resources.musicVol * 0.01)
         return True
 
     

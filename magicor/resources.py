@@ -5,11 +5,23 @@ Copyright 2006  Peter Gebauer. Licensed as Public Domain.
 (see LICENSE for more info)
 """
 import os
-import pygame.image
-import pygame.mixer
-from pygame.mixer import music
+import sys
+import pygame
 
 _RESOURCES = None
+
+
+def _resolve_path(path):
+    path = os.path.normpath(os.path.expandvars(os.path.expanduser(path)))
+    if sys.platform == "emscripten":
+        if not path or path in ("/", os.sep):
+            path = "."
+        elif path.startswith(("/", os.sep)):
+            path = path.lstrip("/")
+    else:
+        path = os.path.abspath(path)
+    return path
+
 
 class ResourceNotFound(Exception):
 
@@ -26,7 +38,7 @@ class Resources(object):
     """
     SUPPORTED_IMAGES = ("png", "jpg", "gif")
     SUPPORTED_MUSIC = ("ogg", "mp3", "mod", "xm")
-    SUPPORTED_SOUNDS = ("wav",)
+    SUPPORTED_SOUNDS = ("wav", "ogg")
     SUPPORTED_FILES = SUPPORTED_IMAGES + SUPPORTED_MUSIC + SUPPORTED_SOUNDS
 
     def __init__(self, paths, sound, music):
@@ -36,14 +48,11 @@ class Resources(object):
         self.soundVol = 100
         self.musicVol = 100
         self.lastMusic = None
-        self.paths = [
-            os.path.normpath(
-            os.path.abspath(
-            os.path.expanduser(
-            os.path.expandvars(path)))) for path in paths]
+        self.paths = [_resolve_path(path) for path in paths]
         self._resources = {}
         self._defaultTile = None
         self._level = {}
+        self._game_assets_loaded = False
         print("resources using paths: %s"%", ".join(paths))
 
     def __getitem__(self, key):
@@ -80,6 +89,8 @@ class Resources(object):
             try:
                 return pygame.image.load(fn)
             except pygame.error as e:
+                if sys.platform == "emscripten":
+                    raise e
                 # Some pygame builds lack SDL_image PNG/JPEG support; Pillow decodes instead.
                 try:
                     from PIL import Image
@@ -97,15 +108,28 @@ class Resources(object):
         if self.music:
             fn = self.findAlternative(path, name, self.SUPPORTED_MUSIC)
             if fn:
-                music.load(fn)
+                pygame.mixer.music.load(fn)
                 return fn
         return None
 
+    def _sound_suffixes(self):
+        if sys.platform == "emscripten":
+            # Prefer WAV; bundled .ogg samples may be Opus (unsupported by SDL_mixer).
+            return ("wav", "ogg")
+        return ("wav", "ogg")
+
     def _loadSound(self, path, name):
         if self.sound:
-            fn = "%s%s%s.wav"%(path, os.path.sep, name)
-            if os.path.isfile(fn):
-                return pygame.mixer.Sound(fn)
+            for suffix in self._sound_suffixes():
+                fn = self.findAlternative(path, name, (suffix,))
+                if fn:
+                    try:
+                        return pygame.mixer.Sound(fn)
+                    except pygame.error as e:
+                        if sys.platform == "emscripten":
+                            print("warning: could not load sound %s (%s)"%(fn, e))
+                            continue
+                        raise
         return None
 
     def loadData(self, filename):
@@ -143,13 +167,13 @@ class Resources(object):
 
     def playMusic(self, name, loop=-1):
         if self._loadSomething(name, self._loadMusic, False):
-            music.set_volume(self.musicVol * 0.01)
-            music.play(loop)
+            pygame.mixer.music.set_volume(self.musicVol * 0.01)
+            pygame.mixer.music.play(loop)
         self.lastMusic = name
 
     def stopMusic(self):
         if pygame.mixer.get_init():
-            music.stop()
+            pygame.mixer.music.stop()
 
     def loadSound(self, name, keep):
         return self._loadSomething(name, self._loadSound, keep)
@@ -193,6 +217,14 @@ class Resources(object):
         if self.sound:
             self[key].set_volume(self.soundVol * 0.01)
             self[key].play()
+
+    def ensure_game_assets(self):
+        if self._game_assets_loaded:
+            return
+        self.addResources("tiles")
+        self.addResources("sprites")
+        self.addResources("samples")
+        self._game_assets_loaded = True
 
     def addResources(self, prefix = None):
         for path in self.paths:

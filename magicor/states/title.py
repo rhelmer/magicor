@@ -4,14 +4,13 @@ All title-like (intros, level selection, etc) states are here.
 Copyright 2006  Peter Gebauer. Licensed as Public Domain.
 (see LICENSE for more info)
 """
-import math, warnings, random, os
+import math, warnings, random, os, sys
 import pygame
 
 from magicor import Text
 from magicor.level import Level
-from magicor.resources import ResourceNotFound
-from magicor.states import MenuState, BaseState
-from magicor.states.play import PlayState
+from magicor.resources import ResourceNotFound, getResources
+from magicor.states import MenuState, BaseState, MenuRepeatGate
 from magicor.states.options import MainOptionsState
 from magicor.sprites.lights import Sun
 from magicor.sprites.decorations import WalkingPenguin
@@ -20,18 +19,18 @@ from magicor.sprites import AnimationGroup
 class TitleState(MenuState):
 
     def __init__(self, config, data, screen, startMusic = True):
-        MenuState.__init__(self,
-                           config, data,
-                           screen,
-                           [("play",
-                             LevelSelectState,
-                             config, data, screen),
-                            ("Options",
-                             MainOptionsState,
-                             config, data, screen, self),
-                            ("Quit", None),
-                            ]
-                           )
+        self.resources = getResources()
+        if sys.platform == "emscripten":
+            self.resources.ensure_game_assets()
+        selectors = [("play",
+                      LevelSelectState,
+                      config, data, screen),
+                     ("Options",
+                      MainOptionsState,
+                      config, data, screen, self)]
+        if sys.platform != "emscripten":
+            selectors.append(("Quit", None))
+        MenuState.__init__(self, config, data, screen, selectors)
         self.eyecandy = self.config.getBool("eyecandy")
         self.resources.addResources("sprites/")
         self.angle = 0
@@ -59,7 +58,7 @@ class TitleState(MenuState):
             self.resources.playMusic("music/soft-trance")
 
     def control(self):
-        if self.controls.escape:
+        if self.controls.escape and sys.platform != "emscripten":
             self.setNext(None)
         MenuState.control(self)
 
@@ -142,6 +141,7 @@ class LevelSelectState(BaseState):
         self.screen.fill(0)
         self.rotoAngle = 0
         self.text = Text(self.screen, self.resources["fonts/info"])
+        self._menu_repeat = MenuRepeatGate()
         self.levelPaths = {}
         for path, levelInfo in self.resources.loadLevelData():
             for filename, data in levelInfo:
@@ -182,18 +182,19 @@ class LevelSelectState(BaseState):
         elif self.controls.start or self.controls.action:
             self.resources.stopMusic()
             self.resources.playSound("samples/start")
+            from magicor.states.play import PlayState
             self.setNext(PlayState(self.config,
                                    self.data,
                                    self.screen,
                                    self.levels[self.selected],
                                    LevelSelectState))
-        elif self.controls.up:
+        elif self._menu_repeat.ready("up", self.controls.up):
             self.resources.playSound("samples/menu")
             self.selected = (self.selected - 1) % len(self.levels)
             self.loaded = False
             self.selectDelay = 2
             self.updateInfo()
-        elif self.controls.down:
+        elif self._menu_repeat.ready("down", self.controls.down):
             self.resources.playSound("samples/menu")
             self.loaded = False
             self.selected = (self.selected + 1) % len(self.levels)

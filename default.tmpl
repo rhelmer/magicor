@@ -1,0 +1,1067 @@
+<html lang="en-us"><script src="{{cookiecutter.cdn}}pythons.js" type=module id="site" data-python="python{{cookiecutter.PYBUILD}}" data-LINES=42 data-COLUMNS=132 data-os="vtx,snd,gui" async defer>#<!--
+
+print("""
+Loading {{cookiecutter.title}} from {{cookiecutter.archive}}.apk
+    Pygbag Version : {{cookiecutter.version}}
+    Template Version : 0.9.3
+    Python  : {{cookiecutter.PYBUILD}}
+    CDN URL : {{cookiecutter.cdn}}
+    Screen  : {{cookiecutter.width}}x{{cookiecutter.height}}
+    Title   : {{cookiecutter.title}}
+    Folder  : {{cookiecutter.directory}}
+    Authors : {{cookiecutter.authors}}
+    SPDX-License-Identifier: {{cookiecutter.spdx}}
+
+""")
+
+import sys
+import asyncio
+import platform
+import json
+from pathlib import Path
+
+# do not rename
+async def set_load_progress(pct, msg):
+    platform.window.eval(
+        "(function(){"
+        "window.magicorSetLoadProgress=window.magicorSetLoadProgress||function(p,m){"
+        "var s=document.getElementById('status');"
+        "var f=document.getElementById('progress-fill');"
+        "if(s)s.textContent=m;"
+        "if(f)f.style.width=Math.max(0,Math.min(100,p))+'%';"
+        "};"
+        f"magicorSetLoadProgress({int(pct)},{json.dumps(msg)});"
+        "})()"
+    )
+    await asyncio.sleep(0)
+
+
+async def custom_site():
+    import embed
+    platform.document.body.style.background = "#0b1a2e"
+
+    platform.window.canvas.style.visibility = "hidden"
+
+    await set_load_progress(8, "Downloading Magicor...")
+
+    bundle = "{{cookiecutter.archive}}"
+
+    # the C or js loader could do that but be explicit.
+    appdir = Path(f"/data/data/{bundle}") # /data/data/{{cookiecutter.archive}}
+    appdir.mkdir()
+
+
+    # unpack filesystem from compressed archive into work dir
+    if platform.window.location.host.find('.itch.zone')>0:
+        import zipfile
+        async with platform.fopen("{{cookiecutter.archive}}.apk", "rb") as archive:
+            with zipfile.ZipFile(archive) as zip_ref:
+                zip_ref.extractall(appdir.as_posix())
+    else:
+        import tarfile
+        async with platform.fopen("{{cookiecutter.archive}}.tar.gz", "rb") as archive:
+            await set_load_progress(18, "Downloading game data...")
+            tar = tarfile.open(fileobj=archive, mode="r:gz")
+            await set_load_progress(22, "Unpacking game data...")
+            tar.extractall(path=appdir.as_posix(), filter='tar')
+            tar.close()
+
+    await set_load_progress(28, "Preparing runtime...")
+
+    # preloader will change to work dir and prepend it to sys.path
+    platform.run_main(PyConfig, loaderhome= appdir / "assets", loadermain=None)
+
+
+    # wait preloading complete : that includes images and wasm compilation of bundled modules
+    preload_start = embed.counter()
+    compile_ticks = 0
+    while embed.counter()<0:
+        cur = embed.counter()
+        if preload_start < 0:
+            done = min(1.0, max(0.0, 1.0 - (abs(cur) / abs(preload_start))))
+            pct = 28 + int(done * 58)
+        else:
+            compile_ticks += 1
+            pct = min(86, 28 + compile_ticks * 2)
+        await set_load_progress(pct, "Compiling for your browser...")
+        await asyncio.sleep(.1)
+
+    main = appdir / "assets" / "main.py"
+
+    await set_load_progress(90, "Almost ready...")
+
+    # TODO: test for window.webkitAudioContext and block aio loop until gesture if accessing media manager play
+    # before a gesture is recorded ( touch or click )
+
+    # test/wait user media interaction
+    if not platform.window.MM.UME:
+
+        # now that apk is mounted we have access to font cache
+        # but we need to fill __file__ that is not yet set
+        __import__(__name__).__file__ = main
+
+        # now make a prompt
+        msg  = "Click or tap to play"
+        platform.window.infobox.innerText = msg
+        platform.window.infobox.hidden = False
+        platform.window.infobox.style.display = "block"
+        print("\n"*4, f"    * Waiting for media user engagement. {msg} *" , "\n"*4)
+
+        while not platform.window.MM.UME:
+            await asyncio.sleep(.1)
+
+    await set_load_progress(100, "Starting game...")
+    platform.window.infobox.style.display = "none"
+    platform.window.eval("hide_splash(); install_mobile_viewport()")
+    platform.window.canvas.style.visibility = "visible"
+
+    # start async top level machinery if not started and add a console in any case if requested.
+    await TopLevel_async_handler.start_toplevel(platform.shell, console=False)
+
+    # now that apk is mounted we have access to font cache
+    # but we need to fill __file__/__name__ that are not yet set
+    __import__(__name__).__file__ = main
+
+
+    def ui_callback(pkg):
+        platform.window.infobox.innerText = f"Installing {pkg}..."
+        platform.window.infobox.hidden = False
+        platform.window.infobox.style.display = "block"
+
+    await shell.source(main, callback=ui_callback)
+
+    # if you don't reach that step
+    # your main.py has an infinite sync loop somewhere !
+
+    platform.window.config.gui_divider = 0
+    platform.window.window_resize()
+    print("default.tmpl: done")
+
+    shell.interactive()
+
+asyncio.run( custom_site() )
+
+
+
+
+
+
+
+
+
+
+
+
+# BEGIN BLOCK
+#
+# now this is the html part you can (and should) customize
+# It is not mandatory : pygame-script when it reads the first line (also called
+# shebang ) of above code create absolute minimal widget set
+# required for running with default rules
+#
+# do not alter that comment block it is separating python code from html code
+# =============================================================================
+# --></script><head><!--
+//=============================================================================
+//
+//
+//
+//
+//
+//
+//
+
+    {%- if cookiecutter.comment != "" -%}
+{{cookiecutter.comment}}
+    {% endif %}
+
+--><script type="application/javascript">
+// END BLOCK
+
+
+
+// this dict is available under PyConfig.config from __main__
+
+config = {
+    xtermjs : "{{cookiecutter.xtermjs}}" ,
+    _sdl2 : "canvas",
+    user_canvas : 0,
+    user_canvas_managed : 1,
+    gui_divider : 0,
+    ume_block : {{cookiecutter.ume_block}},
+    can_close : {{cookiecutter.can_close}},
+    archive : "{{cookiecutter.archive}}",
+    gui_debug : 0,
+    cdn : "{{cookiecutter.cdn}}",
+    autorun : {{cookiecutter.autorun}},
+    PYBUILD : "{{cookiecutter.PYBUILD}}",
+    fb_ar   :  1.333333,
+    fb_width : "{{cookiecutter.width}}",
+    fb_height : "{{cookiecutter.height}}"
+}
+
+function show_infobox() {
+    infobox.hidden = false;
+    infobox.style.display = "block";
+}
+
+</script>
+
+    <title>{{cookiecutter.title}}</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, interactive-widget=overlays-content">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="manifest" href="manifest.json">
+
+
+    <link rel="icon" type="image/png" href="favicon.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="favicon.png" sizes="64x64">
+    <link rel="apple-touch-icon" href="favicon.png">
+
+    <style>
+        :root {
+            --splash-bg: #0b1a2e;
+            --splash-text: #d8ecff;
+            --splash-accent: #8fd0ff;
+            --splash-panel: rgba(8, 20, 40, 0.92);
+        }
+
+        #status {
+            margin: 0 0 0.75rem;
+            font-weight: 600;
+            color: var(--splash-text);
+            font-size: 0.95rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        #progress-track {
+            width: min(360px, 78vw);
+            height: 10px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        #progress-fill {
+            display: block;
+            height: 100%;
+            width: 0%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #5eb8ff, #b8e6ff);
+            transition: width 0.2s ease-out;
+        }
+
+        #infobox {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--splash-panel);
+            color: var(--splash-text);
+            border: 2px solid rgba(143, 208, 255, 0.45);
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 16px 28px;
+            z-index: 999999;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+            font-family: "Trebuchet MS", Verdana, sans-serif;
+            letter-spacing: 0.03em;
+            text-align: center;
+            min-width: min(360px, 80vw);
+        }
+
+        div.emscripten { text-align: center; }
+        div.emscripten_border { border: 1px solid black; }
+        div.thick_border { border: 4px solid black; }
+
+        canvas.emscripten {
+            border: 0px none;
+            background-color: #000000;
+            z-index: 1;
+            padding: 0;
+            margin: 0;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            visibility: hidden;
+        }
+
+        html.game-ready canvas.emscripten {
+            visibility: visible;
+        }
+
+        html.game-ready,
+        html.game-ready body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            position: fixed;
+            inset: 0;
+            overscroll-behavior: none;
+            touch-action: none;
+        }
+
+        #game-stage {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            background: transparent;
+            overflow: hidden;
+            touch-action: none;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        html.game-ready #game-stage {
+            z-index: 5;
+            background: #000000;
+            visibility: visible;
+            pointer-events: auto;
+            box-sizing: border-box;
+        }
+
+        #immersive-hint {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: env(safe-area-inset-bottom, 0);
+            z-index: 30;
+            display: flex;
+            justify-content: center;
+            padding: 0 12px 10px;
+            pointer-events: none;
+        }
+
+        #immersive-hint[hidden] {
+            display: none !important;
+        }
+
+        .immersive-hint-panel {
+            pointer-events: auto;
+            background: rgba(8, 20, 40, 0.94);
+            color: var(--splash-text);
+            border: 1px solid rgba(143, 208, 255, 0.35);
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-family: "Trebuchet MS", Verdana, sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        #a2hs-hint {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: calc(env(safe-area-inset-bottom, 0) + 12px);
+            z-index: 30;
+            display: flex;
+            justify-content: center;
+            padding: 0 12px;
+            pointer-events: none;
+        }
+
+        #a2hs-hint[hidden] {
+            display: none !important;
+        }
+
+        .a2hs-hint-panel {
+            pointer-events: auto;
+            max-width: min(420px, 94vw);
+            background: rgba(8, 20, 40, 0.96);
+            color: var(--splash-text);
+            border: 1px solid rgba(143, 208, 255, 0.35);
+            border-radius: 14px;
+            padding: 14px 16px;
+            text-align: center;
+            font-family: "Trebuchet MS", Verdana, sans-serif;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .a2hs-hint-title {
+            margin: 0 0 6px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .a2hs-hint-sub {
+            margin: 0 0 12px;
+            font-size: 0.82rem;
+            line-height: 1.4;
+            color: rgba(216, 236, 255, 0.85);
+        }
+
+        .a2hs-hint-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #a2hs-hint-dismiss,
+        #a2hs-hint-later {
+            appearance: none;
+            border: 1px solid rgba(143, 208, 255, 0.45);
+            border-radius: 999px;
+            background: rgba(94, 184, 255, 0.18);
+            color: var(--splash-text);
+            font: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 7px 14px;
+            cursor: pointer;
+        }
+
+        #a2hs-hint-later {
+            background: transparent;
+            border-color: rgba(143, 208, 255, 0.25);
+        }
+
+        #a2hs-hint-dismiss:active,
+        #a2hs-hint-later:active {
+            background: rgba(94, 184, 255, 0.32);
+        }
+
+        body {
+            font-family: "Trebuchet MS", Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--splash-bg);
+            color: var(--splash-text);
+            min-height: 100vh;
+        }
+
+        #transfer {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            background:
+                radial-gradient(circle at top, rgba(70, 140, 220, 0.18), transparent 55%),
+                var(--splash-bg);
+            z-index: 20;
+        }
+
+        #transfer[hidden],
+        #transfer.is-hidden {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        #splash {
+            width: min(800px, 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .splash-scene {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 800 / 600;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        .splash-sky,
+        .splash-clouds,
+        .splash-ice {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .splash-sky {
+            top: 0;
+            z-index: 1;
+        }
+
+        .splash-clouds {
+            top: 0;
+            z-index: 2;
+            opacity: 0.95;
+        }
+
+        .splash-ice {
+            top: 41.6667%;
+            z-index: 3;
+        }
+
+        .splash-logo {
+            position: absolute;
+            left: 50%;
+            top: 6.6667%;
+            transform: translateX(-50%);
+            width: 57%;
+            max-width: 456px;
+            height: auto;
+            z-index: 4;
+            pointer-events: none;
+            user-select: none;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+        }
+
+        .splash-footer {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .topright{
+           position:absolute;
+           top:0px;
+           right:0px;
+        }
+
+        .bottomright {
+            position:absolute;
+            top: 40%;
+            right: 0px;
+        }
+
+        .center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .trinfo{
+           position: relative;
+           right: 0px;
+           border: 1px solid black;
+        }
+
+        .framed{
+           position: relative;
+           top: 150px;
+           right: 10px;
+           border: 1px solid black;
+        }
+
+        #pyconsole {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 35vh;
+            z-index: 20;
+            background: #111;
+            border-top: 2px solid #444;
+        }
+
+        #terminal {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+
+    <script>
+/*
+        if (navigator.serviceWorker)
+            navigator.serviceWorker.register("{{cookiecutter.cdn}}pygbag{{cookiecutter.version}}.js")
+        else
+            console.warn("Service workers not supported")
+*/
+    </script>
+
+</head>
+
+<body>
+
+    <div id="transfer">
+        <div id="splash">
+            <div class="splash-scene" aria-hidden="true">
+                <img class="splash-sky" src="splash/title-sky.jpg" alt="">
+                <img class="splash-clouds" src="splash/title-clouds.png" alt="">
+                <img class="splash-ice" src="splash/title-ice.png" alt="">
+                <img class="splash-logo" src="splash/magicor.png" alt="Magicor">
+            </div>
+            <div class="splash-footer">
+                <div id="status">Loading Magicor...</div>
+                <div id="progress-track" aria-hidden="true">
+                    <div id="progress-fill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="game-stage">
+    <canvas class="emscripten" id="canvas"
+width="1px"
+height="1px"
+    oncontextmenu="event.preventDefault()" tabindex=1>
+    </canvas>
+
+    <canvas class="emscripten" id="canvas3d"
+width="{{cookiecutter.width}}px"
+height="{{cookiecutter.height}}px"
+    oncontextmenu="event.preventDefault()" tabindex=1 hidden>
+    </canvas>
+    </div>
+
+    <div id="a2hs-hint" hidden>
+        <div class="a2hs-hint-panel">
+            <p class="a2hs-hint-title">Add Magicor to your Home Screen</p>
+            <p class="a2hs-hint-sub" id="a2hs-hint-text">For fullscreen play without browser bars, install Magicor to your home screen.</p>
+            <div class="a2hs-hint-actions">
+                <button type="button" id="a2hs-hint-dismiss">Got it</button>
+                <button type="button" id="a2hs-hint-later">Not now</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="immersive-hint" hidden>
+        <button type="button" class="immersive-hint-panel" id="immersive-hint-action">Enter fullscreen</button>
+    </div>
+
+    <div id="infobox" hidden>Loading Magicor...</div>
+
+    <div id=html></div>
+
+    <div id=crt  class=bottomright >
+
+        <div id="system" hidden>
+            <div class="button-container">
+                <button id="aiostop" disabled>AIO ⏏︎</button>
+                <button id="aiopaused_true" disabled>AIO ■</button>
+                <button id="aiopaused_false" disabled>AIO ▶</button>
+                <button id="pygame_mixer_music_pause" disabled>Music ■</button>
+            </div>
+
+            <div class="button-container">
+                <div id=load_min>min</div>
+                <div id=load_avg>avg</div>
+                <div id=load_max>max</div>
+              <button id="load_rst" disabled>RESET</button>
+            </div>
+
+            <div id="level">(battery level unknown)</div>
+            <div id="stateBattery">(charging state unknown)</div>
+
+        </div>
+
+        <div id=box class="emscripten_border" hidden=true>
+
+            <div id="info" class="trinfo"></div>
+
+            <iframe id="iframe" class="framed" name="iframe"
+width="470px" height="90%"
+allowtransparency="true"
+style="z-index: 10;"
+style="background: #FFFFFF;"
+frameborder="1"
+                allowfullscreen="true"
+                webkitallowfullscreen="true"
+                msallowfullscreen="true"
+                mozallowfullscreen="true"
+                sandbox="allow-same-origin allow-top-navigation allow-scripts allow-pointer-lock"
+                allow="autoplay; fullscreen *; geolocation; microphone; camera; midi; monetization; xr-spatial-tracking; gamepad; gyroscope; accelerometer; xr; cross-origin-isolated"
+                src="{{cookiecutter.cdn}}empty.html"
+                scrolling="yes">
+            </iframe>
+        </div>
+
+    </div>
+
+
+    <div id="dlg" hidden>
+        <input type="file" id="dlg_multifile" multiple accept="image/*">
+        <label for="dlg_multifile">Select files</label>
+    </div>
+
+    <div id="pyconsole" hidden>
+        <div id="terminal" tabIndex=1 align="left"></div>
+    </div>
+
+    <script type="application/javascript">
+
+    const GAME_AR = 800 / 600
+
+    globalThis.magicorSetLoadProgress = function(pct, msg) {
+        const status = document.getElementById("status")
+        const fill = document.getElementById("progress-fill")
+        if (status) status.textContent = msg
+        if (fill) fill.style.width = Math.max(0, Math.min(100, pct)) + "%"
+    }
+
+    function is_portrait_phone() {
+        return window.matchMedia("(max-width: 900px) and (orientation: portrait)").matches
+    }
+
+    function is_touch_phone() {
+        return window.matchMedia("(max-width: 900px) and (pointer: coarse)").matches
+            || (navigator.maxTouchPoints > 0 && window.innerWidth < 900)
+    }
+
+    function is_standalone_pwa() {
+        return window.matchMedia("(display-mode: standalone)").matches
+            || window.navigator.standalone === true
+    }
+
+    function is_ios_browser() {
+        return /iPhone|iPad|iPod/i.test(navigator.userAgent) && !is_standalone_pwa()
+    }
+
+    function a2hs_hint_dismissed() {
+        try {
+            return localStorage.getItem("magicor-a2hs-dismissed") === "1"
+        } catch (_) {
+            return false
+        }
+    }
+
+    function dismiss_a2hs_hint() {
+        try {
+            localStorage.setItem("magicor-a2hs-dismissed", "1")
+        } catch (_) {}
+        update_a2hs_hint()
+    }
+
+    function a2hs_instructions() {
+        if (is_ios_browser()) {
+            return "Tap Share, then Add to Home Screen. Open Magicor from your home screen for fullscreen landscape play."
+        }
+        return "Use your browser menu to install or add this page to your home screen for fullscreen play."
+    }
+
+    function update_a2hs_hint() {
+        const hint = document.getElementById("a2hs-hint")
+        const text = document.getElementById("a2hs-hint-text")
+        if (!hint) return
+        if (text) text.textContent = a2hs_instructions()
+        const show = document.documentElement.classList.contains("game-ready")
+            && is_touch_phone()
+            && !is_standalone_pwa()
+            && !a2hs_hint_dismissed()
+        hint.hidden = !show
+    }
+
+    function schedule_a2hs_hint() {
+        if (globalThis.__magicor_a2hs_scheduled) return
+        globalThis.__magicor_a2hs_scheduled = true
+        setTimeout(update_a2hs_hint, 2500)
+    }
+
+    function is_fullscreen() {
+        return !!(document.fullscreenElement || document.webkitFullscreenElement)
+    }
+
+    function immersive_hint_dismissed() {
+        try {
+            return sessionStorage.getItem("magicor-immersive-hint") === "1"
+        } catch (_) {
+            return false
+        }
+    }
+
+    function dismiss_immersive_hint() {
+        try {
+            sessionStorage.setItem("magicor-immersive-hint", "1")
+        } catch (_) {}
+        update_immersive_hint()
+    }
+
+    function can_request_fullscreen() {
+        const el = document.getElementById("game-stage") || document.documentElement
+        return !!(el.requestFullscreen || el.webkitRequestFullscreen)
+    }
+
+    function update_immersive_hint() {
+        const hint = document.getElementById("immersive-hint")
+        const btn = document.getElementById("immersive-hint-action")
+        if (!hint) return
+        const show = document.documentElement.classList.contains("game-ready")
+            && can_request_fullscreen()
+            && !is_standalone_pwa()
+            && !is_fullscreen()
+            && !immersive_hint_dismissed()
+            && (!is_touch_phone() || !is_portrait_phone())
+        if (btn) {
+            btn.textContent = is_touch_phone() ? "Tap for fullscreen" : "Enter fullscreen"
+        }
+        hint.hidden = !show
+    }
+
+    function sync_stage_to_viewport() {
+        const stage = document.getElementById("game-stage")
+        const vv = window.visualViewport
+        if (!stage) return
+        if (vv) {
+            stage.style.position = "fixed"
+            stage.style.top = vv.offsetTop + "px"
+            stage.style.left = vv.offsetLeft + "px"
+            stage.style.width = vv.width + "px"
+            stage.style.height = vv.height + "px"
+            stage.style.right = "auto"
+            stage.style.bottom = "auto"
+            stage.style.padding = "0"
+        }
+    }
+
+    function viewport_size() {
+        const vv = window.visualViewport
+        return {
+            w: vv ? vv.width : window.innerWidth,
+            h: vv ? vv.height : window.innerHeight,
+        }
+    }
+
+    function fit_game_canvas() {
+        const canvas = document.getElementById("canvas")
+        const stage = document.getElementById("game-stage")
+        if (!canvas || !stage) return
+
+        document.documentElement.classList.add("game-ready")
+        sync_stage_to_viewport()
+        const { w: maxW, h: maxH } = viewport_size()
+
+        let wantW = maxW
+        let wantH = Math.trunc(wantW / GAME_AR)
+        if (wantH > maxH) {
+            wantH = maxH
+            wantW = Math.trunc(wantH * GAME_AR)
+        }
+
+        canvas.style.width = wantW + "px"
+        canvas.style.height = wantH + "px"
+        schedule_a2hs_hint()
+        update_immersive_hint()
+    }
+
+    async function try_enter_fullscreen() {
+        if (is_standalone_pwa() || is_fullscreen()) return
+        const el = document.getElementById("game-stage") || document.documentElement
+        try {
+            if (el.requestFullscreen) {
+                await el.requestFullscreen({ navigationUI: "hide" })
+            } else if (el.webkitRequestFullscreen) {
+                await el.webkitRequestFullscreen()
+            }
+        } catch (_) {
+            // Safari tabs may refuse; visualViewport sizing still helps.
+        }
+        setTimeout(fit_game_canvas, 100)
+    }
+
+    async function try_lock_landscape() {
+        if (!is_standalone_pwa()) return
+        try {
+            if (screen.orientation && screen.orientation.lock) {
+                await screen.orientation.lock("landscape")
+                fit_game_canvas()
+            }
+        } catch (_) {}
+    }
+
+    function magicor_client_to_game(clientX, clientY) {
+        const canvas = document.getElementById("canvas")
+        if (!canvas) return null
+        const rect = canvas.getBoundingClientRect()
+        if (!rect.width || !rect.height) return null
+        return {
+            x: (clientX - rect.left) / rect.width * 800,
+            y: (clientY - rect.top) / rect.height * 600,
+        }
+    }
+
+    function magicor_norm_to_game(nx, ny) {
+        const vv = window.visualViewport
+        const vw = vv ? vv.width : window.innerWidth
+        const vh = vv ? vv.height : window.innerHeight
+        const left = vv ? vv.offsetLeft : 0
+        const top = vv ? vv.offsetTop : 0
+        return magicor_client_to_game(left + nx * vw, top + ny * vh)
+    }
+
+    globalThis.magicor_client_to_game = magicor_client_to_game
+    globalThis.magicor_norm_to_game = magicor_norm_to_game
+
+    function install_pointer_bridge() {
+        const canvas = document.getElementById("canvas")
+        if (!canvas || globalThis.__magicorPointerBridge) return
+        globalThis.__magicorPointerBridge = true
+        const update_client = (clientX, clientY) => {
+            const pos = magicor_client_to_game(clientX, clientY)
+            if (pos) globalThis.__magicorPointer = pos
+        }
+        const update = (e) => update_client(e.clientX, e.clientY)
+        const update_touch = (e) => {
+            const t = e.changedTouches?.[0] || e.touches?.[0]
+            if (t) update_client(t.clientX, t.clientY)
+        }
+        const clear = () => {
+            globalThis.__magicorPointer = null
+        }
+        canvas.addEventListener("pointerdown", update, { passive: true })
+        canvas.addEventListener("pointermove", update, { passive: true })
+        canvas.addEventListener("pointerup", clear, { passive: true })
+        canvas.addEventListener("pointercancel", clear, { passive: true })
+        canvas.addEventListener("touchstart", update_touch, { passive: true })
+        canvas.addEventListener("touchmove", update_touch, { passive: true })
+        canvas.addEventListener("touchend", clear, { passive: true })
+        canvas.addEventListener("touchcancel", clear, { passive: true })
+    }
+
+    function install_mobile_viewport() {
+        install_pointer_bridge()
+        globalThis.window_resize = function(gui_divider) {
+            fit_game_canvas()
+            setTimeout(() => window.focus?.(), 100)
+        }
+        if (!globalThis.__magicor_viewport_installed) {
+            globalThis.__magicor_viewport_installed = true
+            const a2hsDismiss = document.getElementById("a2hs-hint-dismiss")
+            const a2hsLater = document.getElementById("a2hs-hint-later")
+            if (a2hsDismiss) a2hsDismiss.addEventListener("click", dismiss_a2hs_hint)
+            if (a2hsLater) a2hsLater.addEventListener("click", dismiss_a2hs_hint)
+            const immersiveBtn = document.getElementById("immersive-hint-action")
+            if (immersiveBtn) {
+                immersiveBtn.addEventListener("click", async () => {
+                    await try_enter_fullscreen()
+                    await try_lock_landscape()
+                    dismiss_immersive_hint()
+                })
+            }
+            document.addEventListener("fullscreenchange", () => setTimeout(fit_game_canvas, 50))
+            document.addEventListener("webkitfullscreenchange", () => setTimeout(fit_game_canvas, 50))
+            window.addEventListener("resize", () => setTimeout(fit_game_canvas, 50))
+            window.addEventListener("orientationchange", () => setTimeout(fit_game_canvas, 200))
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener("resize", () => setTimeout(fit_game_canvas, 50))
+                window.visualViewport.addEventListener("scroll", () => {
+                    window.scrollTo(0, 0)
+                    setTimeout(fit_game_canvas, 50)
+                })
+            }
+            window.scrollTo(0, 0)
+            document.addEventListener("touchmove", (e) => {
+                if (e.target === document.documentElement || e.target === document.body) {
+                    e.preventDefault()
+                }
+            }, { passive: false })
+            const canvas = document.getElementById("canvas")
+            if (canvas && is_standalone_pwa()) {
+                canvas.addEventListener("pointerdown", () => {
+                    try_lock_landscape()
+                }, { once: true, passive: true })
+            }
+        }
+        fit_game_canvas()
+    }
+
+    function hide_splash() {
+        const el = document.getElementById("transfer")
+        if (!el || el.dataset.dismissed === "1") return
+        el.dataset.dismissed = "1"
+        el.hidden = true
+        el.classList.add("is-hidden")
+        el.style.display = "none"
+        el.style.visibility = "hidden"
+        el.style.pointerEvents = "none"
+        el.replaceChildren()
+        document.documentElement.classList.add("game-ready")
+        document.body.style.background = "#000000"
+        const canvas = document.getElementById("canvas")
+        if (canvas) {
+            canvas.style.visibility = "visible"
+        }
+    }
+
+    globalThis.__canvas_resized = (self, ecw, ech) => {
+        if (document.getElementById("transfer")?.dataset.dismissed === "1") {
+            fit_game_canvas()
+        }
+    }
+
+    async function custom_onload(debug_hidden) {
+        if (window.location.hash === "#debug") {
+            debug_hidden = false
+        }
+        console.log(__FILE__, "custom_onload")
+
+        const pyconsoleEl = document.getElementById("pyconsole")
+        const terminalEl = document.getElementById("terminal")
+        if (pyconsoleEl) pyconsoleEl.hidden = debug_hidden
+        if (terminalEl) terminalEl.hidden = debug_hidden
+        if (window.system) system.hidden = debug_hidden
+        if (window.info) info.hidden = debug_hidden
+        if (window.box) box.hidden = debug_hidden
+        if (window.python && python.config) python.config.debug = !debug_hidden
+
+        if (window.location.hash !== "#debug") {
+            infobox.hidden = true
+            infobox.style.display = "none"
+        } else if (window.transfer) {
+            transfer.hidden = debug_hidden
+        }
+    }
+
+    function custom_prerun(){
+        // no python main and no (MEMFS + VFS) yet.
+        console.log(__FILE__, "custom_prerun")
+
+    }
+
+    function custom_postrun(){
+        // python main and no VFS filesystem yet.
+        console.log(__FILE__, "custom_postrun")
+    }
+
+    function debug() {
+        // allow to gain access to dev tools from js console
+        // but only on desktop. difficult to reach when in iframe
+        python.config.debug = true
+        custom_onload(false)
+        Module.PyRun_SimpleString("shell.uptime()")
+        window_resize()
+    }
+
+    function info_inline(data){
+        document.getElementById("info").innerHTML = data
+    }
+
+    function info_online(url) {
+        // display info about current APK
+        fetch( url /*, options */)
+            .then((response) => response.text())
+            .then((html) => {
+                info_inline(html);
+        })
+        .catch((error) => {
+            console.warn(error);
+        });
+    }
+
+    function frame_online(url) {
+        window.frames["iframe"].location = url;
+    }
+
+    </script>
+
+</body>
+</html>

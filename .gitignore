@@ -3,4 +3,6 @@
 *.bak
 dist
 .venv
+.virtualenv
+build
 .DS_Store

@@ -9,6 +9,7 @@ import pygame
 
 from magicor import Text
 from magicor.level import Level
+from magicor.level_order import level_sort_key
 from magicor.resources import ResourceNotFound, getResources
 from magicor.states import MenuState, BaseState, MenuRepeatGate
 from magicor.states.options import MainOptionsState
@@ -151,9 +152,10 @@ class LevelSelectState(BaseState):
                     level.theme = theme or None
                     self.levels.append(level)
                     self.levelPaths[level] = path + filename
-        #self.levels.sort(lambda x, y:
-        #                 cmp(x.theme, y.theme)
-        #                 or cmp(x.title, y.title))
+        # Levels arrive in os.listdir order, which is arbitrary. Group them by
+        # theme and sort naturally, so "Forest 10" follows "Forest 02" and the
+        # casing and dash/space drift in the .lvl titles stops mattering.
+        self.levels.sort(key=level_sort_key)
 	#start possibly at a level never tried
         for i in range(len(self.levels)):
             if (not self.config.getInt("time_"+self.levels[i].title)):

@@ -29,6 +29,14 @@ class DataParser(object):
                     if len(spl) == 2:
                         command, rest = spl
                         self.handle(command, rest, lc)
+                    elif len(spl) == 1:
+                        # A bare keyword with no argument is legal syntax for
+                        # commands that take none, such as `hint`. The 1.0
+                        # LevelEditor writes `hint` with no trailing space,
+                        # while 0.1 wrote `hint ` — both mean the same thing,
+                        # so accept the single-token form with an empty
+                        # argument rather than warning about valid data.
+                        self.handle(spl[0], "", lc)
                     else:
                         warnings.warn("invalid data on lin %d"%lc)
             # end line-empty test
